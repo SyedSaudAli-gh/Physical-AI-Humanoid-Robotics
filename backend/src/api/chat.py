@@ -1,50 +1,61 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from typing import Optional, Dict, Any
 from pydantic import BaseModel
-from ..database import get_db
-from ..services.rag_service import RAGService
+from typing import List, Dict, Any
+from database import get_db
+from services.rag_service import RAGService
+
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
-# Request model for chat queries
-class ChatQueryRequest(BaseModel):
+class QueryRequest(BaseModel):
     query: str
-    selected_text: Optional[str] = None
-    chapter_id: Optional[str] = None
-    include_context: Optional[bool] = True
+    selected_text: str = None  # Text selected by the user in the textbook
 
-@router.post("/query", response_model=Dict[str, Any])
-def query_chat(request: ChatQueryRequest, db: Session = Depends(get_db)):
+class QueryResponse(BaseModel):
+    query: str
+    answer: str
+    sources: List[Dict[str, Any]]
+    selected_text_context: str = None
+
+class ProcessChapterRequest(BaseModel):
+    chapter_id: int
+
+class ProcessChapterResponse(BaseModel):
+    chapter_id: int
+    chapter_title: str
+    chunks_processed: int
+    status: str
+
+@router.post("/query", response_model=QueryResponse)
+def query_knowledge_base(request: QueryRequest, db: Session = Depends(get_db)):
     """
-    Query the RAG system with book context
+    Query the RAG system for answers based on textbook content
     """
     try:
-        rag_service = RAGService(db)
+        service = RAGService(db)
+        result = service.query_knowledge_base(request.query, request.selected_text)
         
-        # Perform the query
-        result = rag_service.query_content(
-            query=request.query,
-            selected_text=request.selected_text,
-            chapter_id=request.chapter_id,
-            include_context=request.include_context
+        return QueryResponse(
+            query=result["query"],
+            answer=result["answer"],
+            sources=result["sources"],
+            selected_text_context=result["selected_text_context"]
         )
-        
-        # Log the interaction for analytics
-        # Note: In a real implementation, we would extract the user ID from the request
-        # For now, using a placeholder
-        user_id = "placeholder_user_id"  # Should come from authentication
-        rag_service.log_interaction(
-            user_id=user_id,
-            query=request.query,
-            response=result.get('response', 'No response generated'),
-            selected_text=request.selected_text,
-            chapter_id=request.chapter_id
-        )
-        
-        return result
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing chat query: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
+
+@router.post("/process-chapter", response_model=ProcessChapterResponse)
+def process_chapter_for_rag(request: ProcessChapterRequest, db: Session = Depends(get_db)):
+    """
+    Process a chapter and store its content in the vector database for RAG
+    """
+    try:
+        service = RAGService(db)
+        result = service.process_and_store_chapter(request.chapter_id)
+        
+        return ProcessChapterResponse(**result)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Chapter processing failed: {str(e)}")

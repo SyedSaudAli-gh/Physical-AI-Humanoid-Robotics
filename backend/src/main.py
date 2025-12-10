@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from src.api import modules, chapters, auth, users, translation
-from src.database import create_tables
+from api import modules, chapters, auth, users, translation, personalization
+from database import create_tables
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -32,6 +32,7 @@ app.include_router(chapters.router, prefix="/api")
 app.include_router(auth.auth_router, prefix="/api")
 app.include_router(users.router, prefix="/api")
 app.include_router(translation.router, prefix="/api")
+app.include_router(personalization.router, prefix="/api")
 
 @app.get("/")
 def read_root():

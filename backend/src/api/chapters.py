@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from ..database import get_db
-from ..models.chapter import Chapter
-from ..services.chapter_service import ChapterService, ChapterCreate
-from ..services.personalization_service import PersonalizationService
+from database import get_db
+from models.chapter import Chapter
+from services.chapter_service import ChapterService, ChapterCreate
+from services.personalization_service import PersonalizationService
 
 router = APIRouter(prefix="/chapters", tags=["chapters"])
 

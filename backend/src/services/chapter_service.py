@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from ..models.chapter import Chapter
-from ..models.content import BookContent
+from models.chapter import Chapter
+from models.content import BookContent
 from pydantic import BaseModel
 from datetime import datetime
 

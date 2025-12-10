@@ -109,22 +109,41 @@ const config = {
       // Replace with your project's social card
       image: 'img/docusaurus-social-card.jpg',
       navbar: {
-        title: 'Physical AI & Humanoid Robotics Book',
+        title: 'Physical AI & Humanoid Robotics',
         logo: {
           alt: 'Physical AI Logo',
           src: 'img/logo.svg',
         },
         items: [
           {
+            to: '/',
+            label: 'Home',
+            position: 'left',
+          },
+          {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
             label: 'Book',
           },
-          // Add language switcher to navbar
           {
             type: 'localeDropdown',
             position: 'right',
+          },
+          {
+            type: 'dropdown',
+            label: '👤',
+            position: 'right',
+            items: [
+              {
+                label: 'Login',
+                to: '/login',
+              },
+              {
+                label: 'Signup',
+                to: '/signup',
+              },
+            ],
           },
           {
             href: 'https://github.com/facebook/docusaurus',
@@ -180,6 +199,23 @@ const config = {
       },
     }),
   
+  plugins: [
+    // Add any necessary plugins here
+    // Only include the API plugin if the 'api' directory exists
+    // [
+    //   '@docusaurus/plugin-content-docs',
+    //   {
+    //     id: 'api',
+    //     path: 'api',
+    //     routeBasePath: 'api',
+    //     sidebarPath: require.resolve('./sidebars.js'),
+    //   },
+    // ],
+  ],
+
+  // Development server proxy configuration
+  staticDirectories: ['static'],
+
   plugins: [
     // Add any necessary plugins here
     // Only include the API plugin if the 'api' directory exists

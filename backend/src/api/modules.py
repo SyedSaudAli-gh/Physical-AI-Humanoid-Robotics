@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
-from ..database import get_db
-from ..models.module import Module
-from ..services.module_service import ModuleService, ModuleCreate
+from database import get_db
+from models.module import Module
+from services.module_service import ModuleService, ModuleCreate
 
 router = APIRouter(prefix="/modules", tags=["modules"])
 

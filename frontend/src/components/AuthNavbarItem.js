@@ -46,17 +46,17 @@ const AuthNavbarItem = () => {
     return (
       <div className="navbar__item dropdown dropdown--hoverable">
         <span className="navbar__link">
-          Account ▾
+          👤 ▾
         </span>
         <ul className="dropdown__menu">
           <li>
-            <a className="dropdown__link" href="/register">
-              Sign Up
+            <a className="dropdown__link" href="/login">
+              Login
             </a>
           </li>
           <li>
-            <a className="dropdown__link" href="/login">
-              Login
+            <a className="dropdown__link" href="/signup">
+              Sign Up
             </a>
           </li>
         </ul>

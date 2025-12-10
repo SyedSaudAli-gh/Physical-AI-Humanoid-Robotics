@@ -1,214 +1,114 @@
-from sqlalchemy.orm import Session
-from typing import Dict, Any, List, Optional
 import json
-from ..models.translation_data import TranslationData
-from ..models.chapter import Chapter
-from ..rag.cohere_embedder import embedding_service
-from ...qwen.skills.translation_validator import validate_translation
+import cohere
+from typing import Dict, Any
+from sqlalchemy.orm import Session
+from models.chapter import Chapter
+from config import settings
+
 
 class TranslationService:
-    """
-    Service for handling translation using Qwen 1.5 Pro via subagent
-    """
-
     def __init__(self, db: Session):
         self.db = db
+        self.cohere_client = cohere.Client(settings.cohere_api_key)
 
-    def translate_content(self, content: str, target_language: str = "ur",
-                         source_language: str = "en") -> str:
-        """
-        Translate content to target language using Qwen via subagent
-        In a real implementation, this would call the Qwen subagent
-        For this implementation, we'll provide placeholder translations for Urdu
-        """
-        if target_language == "ur":
-            # In a real implementation, this would call Qwen via subagent
-            # translated_text = self._call_qwen_subagent(content, target_language)
-            # For now, we'll return a placeholder
-            return self._get_urdu_translation(content)
-        else:
-            # For other languages, return original content
-            return content
+    def translate_chapter_to_urdu(self, chapter_id: int) -> Dict[str, Any]:
+        """Translate chapter content to Urdu while preserving technical terms"""
 
-    def _get_urdu_translation(self, content: str) -> str:
-        """
-        Placeholder function to simulate Urdu translation
-        In a real implementation, this would call the Qwen subagent
-        """
-        # This is a simplified placeholder translation
-        # In reality, you'd call the Qwen subagent here
-        placeholders = {
-            "Introduction": "تعارف",
-            "ROS 2": "آر او ایس 2",
-            "chapter": "چیپٹر",
-            "content": "مواد",
-            "textbook": " textbook",  # Keep as is since there's no direct translation
-            "robotics": "روبوٹکس",
-            "module": "ماڈیول",
-            "learning": "سیکھنا",
-            "outcomes": "نتائج",
-            "example": "مثال",
-            "code": "کوڈ",
-            "simulation": "سمولیشن",
-            "practical": "عملی",
-            "theoretical": "نظریاتی",
-            "foundations": "ادارے",
-            "Vision-Language-Action": " وژن-لینگویج-ایکشن",
-            "NVIDIA Isaac": "این ویڈیا ایزک",
-            "Gazebo": "گزیبو",
-            "Unity": "یونٹی",
-            "AI": "مصنوعی ذہنیت",
-            "artificial intelligence": "مصنوعی ذہنیت",
-            "humanoid": "ہیومنوڈ",
-            "robot": "روبوٹ"
-        }
+        # Get the chapter content
+        chapter = self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
+        if not chapter:
+            raise ValueError(f"Chapter with ID {chapter_id} not found")
 
-        translated = content
-        for eng, urdu in placeholders.items():
-            translated = translated.replace(eng, urdu)
+        # If already translated, return cached version
+        if chapter.urdu_translation:
+            return {
+                "id": chapter.id,
+                "title": chapter.title,
+                "urdu_content": chapter.urdu_translation
+            }
 
-        # Add a note that this is a placeholder translation
-        return f"[PLACEHOLDER URDU TRANSLATION] {translated}\n\n[Note: This is a placeholder translation. In a real implementation, this would be translated using Qwen 1.5 Pro via subagent]"
+        # Prepare content for translation - preserve technical terms
+        content = self._preserve_technical_terms(chapter.content)
 
-    def store_translation(self, source_content_id: str, target_language: str,
-                         translated_content: str, verification_status: str = "pending",
-                         verified_by: Optional[str] = None) -> bool:
-        """
-        Store translated content in the database
-        """
+        # Use Cohere for translation
         try:
-            translation = TranslationData(
-                source_content_id=source_content_id,
-                target_language=target_language,
-                translated_content=translated_content,
-                verification_status=verification_status,
-                verified_by=verified_by
+            response = self.cohere_client.translate(
+                text=content,
+                source_language="en",
+                target_language="ur"
             )
 
-            self.db.add(translation)
+            urdu_translation = response.translated_text
+
+            # Restore technical terms in Urdu content
+            urdu_translation = self._restore_technical_terms(urdu_translation)
+
+            # Save the translation to the database
+            chapter.urdu_translation = urdu_translation
             self.db.commit()
-            return True
+
+            return {
+                "id": chapter.id,
+                "title": chapter.title,
+                "urdu_content": urdu_translation
+            }
         except Exception as e:
-            print(f"Error storing translation: {str(e)}")
-            self.db.rollback()
-            return False
+            raise Exception(f"Translation failed: {str(e)}")
 
-    def get_translation(self, source_content_id: str, target_language: str) -> Optional[TranslationData]:
-        """
-        Get existing translation from database
-        """
-        return self.db.query(TranslationData).filter(
-            TranslationData.source_content_id == source_content_id,
-            TranslationData.target_language == target_language
-        ).first()
-
-    def translate_and_store(self, source_content_id: str, content: str,
-                           target_language: str = "ur") -> Optional[TranslationData]:
-        """
-        Translate content and store in database
-        """
-        # Check if translation already exists
-        existing = self.get_translation(source_content_id, target_language)
-        if existing:
-            return existing
-
-        # Translate the content
-        translated_content = self.translate_content(content, target_language)
-
-        # Store the translation initially as pending verification
-        if self.store_translation(source_content_id, target_language, translated_content, "pending"):
-            return self.get_translation(source_content_id, target_language)
-
-        return None
-
-    def get_or_create_translation(self, source_content_id: str, content: str,
-                                 target_language: str = "ur") -> str:
-        """
-        Get existing translation or create a new one
-        """
-        # First, try to get existing translation
-        translation = self.get_translation(source_content_id, target_language)
-
-        if translation:
-            return translation.translated_content
-        else:
-            # Create new translation
-            new_translation = self.translate_and_store(source_content_id, content, target_language)
-            if new_translation:
-                return new_translation.translated_content
-            else:
-                # If translation fails, return original content
-                return content
-
-    def verify_translation(self, translation_id: str, verified_by: Optional[str] = None) -> bool:
-        """
-        Verify a translation and update its status
-        """
-        translation = self.db.query(TranslationData).filter(
-            TranslationData.id == translation_id
-        ).first()
-
-        if not translation:
-            return False
-
-        # Get the original content for validation
-        # In a real implementation, you'd get this from the source
-        # For this example, we'll just validate with the service
-        validation_result = validate_translation(
-            translation.source_content_id,  # This would be the original text in reality
-            translation.translated_content
-        )
-
-        # Update the verification status based on validation
-        if validation_result.get("is_valid", False):
-            translation.verification_status = "verified"
-        else:
-            translation.verification_status = "needs_revision"
-
-        # Set who verified it
-        if verified_by:
-            translation.verified_by = verified_by
-
+    def translate_content(self, content: str, target_language: str, source_language: str = "en") -> str:
+        """Translate arbitrary content to target language"""
         try:
-            self.db.commit()
-            return True
+            response = self.cohere_client.translate(
+                text=content,
+                source_language=source_language,
+                target_language=target_language
+            )
+            return response.translated_text
         except Exception as e:
-            print(f"Error updating translation verification: {str(e)}")
-            self.db.rollback()
-            return False
+            raise Exception(f"Content translation failed: {str(e)}")
 
-    def get_translations_by_status(self, status: str) -> List[TranslationData]:
-        """
-        Get all translations with a specific verification status
-        """
-        return self.db.query(TranslationData).filter(
-            TranslationData.verification_status == status
-        ).all()
+    def get_or_create_translation(self, source_content_id: str, content: str, target_language: str) -> str:
+        """Get existing translation or create a new one"""
+        # For chapter translation, we need to get the chapter by ID
+        if source_content_id.startswith('chapter_'):
+            chapter_id = int(source_content_id.replace('chapter_', ''))
+            chapter = self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
+            if chapter and chapter.urdu_translation:
+                return chapter.urdu_translation
 
-    def update_translation_verification_status(self, translation_id: str, status: str,
-                                              verified_by: Optional[str] = None) -> bool:
-        """
-        Update the verification status of a translation
-        """
-        translation = self.db.query(TranslationData).filter(
-            TranslationData.id == translation_id
-        ).first()
+        # If no existing translation, create a new one
+        return self.translate_content(content, target_language)
 
-        if not translation:
-            return False
+    def store_translation(self, source_content_id: str, target_language: str, translation: str):
+        """Store translation in database"""
+        # If this is a chapter, store in the chapter model
+        if source_content_id.startswith('chapter_'):
+            chapter_id = int(source_content_id.replace('chapter_', ''))
+            chapter = self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
+            if chapter:
+                if target_language == 'ur':
+                    chapter.urdu_translation = translation
+                self.db.commit()
 
-        translation.verification_status = status
-        if verified_by:
-            translation.verified_by = verified_by
+    def _preserve_technical_terms(self, content: str) -> str:
+        """Identify and preserve technical terms during translation"""
+        # In a real implementation, this would identify technical terms and replace them
+        # with placeholders to preserve them during translation
+        return content
 
+    def _restore_technical_terms(self, translated_content: str) -> str:
+        """Restore technical terms after translation"""
+        # In a real implementation, this would restore technical terms from placeholders
+        return translated_content
+
+    def translate_text_to_urdu(self, text: str) -> str:
+        """Translate arbitrary text to Urdu"""
         try:
-            self.db.commit()
-            return True
+            response = self.cohere_client.translate(
+                text=text,
+                source_language="en",
+                target_language="ur"
+            )
+            return response.translated_text
         except Exception as e:
-            print(f"Error updating translation status: {str(e)}")
-            self.db.rollback()
-            return False
-
-# Example usage
-if __name__ == "__main__":
-    print("Translation service created")
+            raise Exception(f"Text translation failed: {str(e)}")

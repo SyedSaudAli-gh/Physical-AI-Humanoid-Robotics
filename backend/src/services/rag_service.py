@@ -1,188 +1,158 @@
-from sqlalchemy.orm import Session
+import openai
 from typing import List, Dict, Any
-from ..models.rag_index import RagIndex
-from ..models.interaction_log import InteractionLog
-from ..rag.vector_db import vector_db, chunker
-from ..rag.cohere_embedder import embedding_service
-from .cache_service import CacheService
-from datetime import datetime
-import json
+from sqlalchemy.orm import Session
+from rag.vector_db import vector_db, chunker
+from rag.cohere_embedder import embedding_service
+from models.chapter import Chapter
+from config import settings
+
 
 class RAGService:
-    """
-    Service for handling Retrieval Augmented Generation (RAG) functionality
-    """
-    
     def __init__(self, db: Session):
         self.db = db
-    
-    def index_content(self, content_id: str, content_text: str, metadata: Dict[str, Any]) -> bool:
-        """
-        Index content for RAG by creating embeddings and storing in vector database
-        """
-        try:
-            # Chunk the content using the 512-token chunker with 128-token overlap
-            chunks = chunker.chunk_text(content_text)
-            
-            # Process each chunk
-            for chunk in chunks:
-                # Generate embedding for the chunk text
-                embedding = embedding_service.get_embedding_for_content(
-                    chunk['text'], 
-                    language=metadata.get('language', 'en'),
-                    content_type='search_document'
-                )
-                
-                # Store in vector database
-                vector_db.store_embeddings(
-                    content_id=f"{content_id}_chunk_{chunk['chunk_id']}",
-                    embedding=embedding,
-                    metadata={
-                        **metadata,
-                        'chunk_id': chunk['chunk_id'],
-                        'chunk_text': chunk['text'],
-                        'position': chunk['metadata']['position']
-                    }
-                )
-                
-                # Also store in the database for record keeping
-                rag_index = RagIndex(
-                    id=f"{content_id}_chunk_{chunk['chunk_id']}",
-                    content_id=content_id,
-                    embedding=embedding,
-                    chunk_text=chunk['text'],
-                    chunk_metadata=json.dumps({
-                        **metadata,
-                        'chunk_id': chunk['chunk_id'],
-                        'position': chunk['metadata']['position']
-                    })
-                )
-                self.db.add(rag_index)
-            
-            self.db.commit()
-            return True
-        except Exception as e:
-            print(f"Error indexing content: {str(e)}")
-            self.db.rollback()
-            return False
-    
-    def query_content(self, query: str, selected_text: str = None,
-                     chapter_id: str = None, include_context: bool = True,
-                     limit: int = 5) -> Dict[str, Any]:
-        """
-        Query the RAG system with book context
-        """
-        # Check cache first
-        cached_response = CacheService.get_cached_response(query, selected_text, chapter_id)
-        if cached_response:
-            # Add cache hit indicator
-            cached_response['cache_hit'] = True
-            return cached_response
+        openai.api_key = settings.openai_api_key
 
-        try:
-            # Generate embedding for the query
-            query_embedding = embedding_service.get_embedding_for_content(
-                query,
-                language='en',
-                content_type='search_query'
+    def process_and_store_chapter(self, chapter_id: int):
+        """Process a chapter and store its chunks in the vector database"""
+        # Get the chapter content
+        chapter = self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
+        if not chapter:
+            raise ValueError(f"Chapter with ID {chapter_id} not found")
+            
+        # Chunk the content
+        chunks = chunker.chunk_text(chapter.content)
+        
+        # Process each chunk
+        for chunk in chunks:
+            # Generate embedding for the chunk
+            embedding = embedding_service.get_embedding_for_content(
+                chunk['text'], 
+                language="en", 
+                content_type="document"
             )
-
-            # Search for similar content in the vector database
-            search_results = vector_db.search_similar(query_embedding, limit=limit)
-
-            # Prepare response
-            response = {
-                'query': query,
-                'response': '',
-                'sources': [],
-                'timestamp': datetime.now().isoformat()
+            
+            # Prepare metadata
+            metadata = {
+                'chapter_id': chapter.id,
+                'chapter_title': chapter.title,
+                'module_id': chapter.module_id,
+                'chunk_position': chunk['metadata']['position'],
+                'word_count': chunk['metadata']['word_count']
             }
-
-            if search_results:
-                # Generate response based on retrieved context
-                context_texts = []
-                for result in search_results:
-                    context_texts.append(result['metadata']['chunk_text'])
-                    response['sources'].append({
-                        'chapter_id': result['metadata'].get('chapter_id'),
-                        'module_id': result['metadata'].get('module_id'),
-                        'relevance_score': result['similarity_score']
-                    })
-
-                # Generate response using the retrieved context
-                # In a real implementation, this would call an LLM with the context
-                response['response'] = self._generate_response_with_context(
-                    query,
-                    context_texts,
-                    selected_text
-                )
-            else:
-                response['response'] = "I couldn't find relevant information to answer your question."
-
-            # Cache the response for future queries
-            CacheService.cache_response(query, response, selected_text, chapter_id)
-
-            return response
-        except Exception as e:
-            print(f"Error querying content: {str(e)}")
-            error_response = {
-                'query': query,
-                'response': 'Error processing your query. Please try again later.',
-                'sources': [],
-                'timestamp': datetime.now().isoformat()
-            }
-
-            # Still cache error responses to prevent repeated error processing
-            CacheService.cache_response(query, error_response, selected_text, chapter_id)
-
-            return error_response
-    
-    def _generate_response_with_context(self, query: str, context_texts: List[str], 
-                                      selected_text: str = None) -> str:
-        """
-        Generate response using the retrieved context
-        In a real implementation, this would call an LLM with the context
-        """
-        # This is a simplified implementation
-        # In a real system, you would send the query + context to an LLM
+            
+            # Store in vector database
+            vector_db.store_embeddings(
+                content_id=chunk['chunk_id'],
+                embedding=embedding,
+                metadata=metadata
+            )
         
-        # Combine context texts
-        context = " ".join(context_texts[:3])  # Use top 3 results
+        return {
+            "chapter_id": chapter.id,
+            "chapter_title": chapter.title,
+            "chunks_processed": len(chunks),
+            "status": "success"
+        }
+
+    def query_knowledge_base(self, query: str, selected_text: str = None) -> Dict[str, Any]:
+        """Query the knowledge base using RAG approach"""
         
-        # Create a response based on context
+        # Combine query with selected text if available
+        full_query = query
         if selected_text:
-            response = f"Based on the selected text and related content: {context[:500]}... "
-            response += f"The information relevant to your query '{query}' is likely found in this context."
-        else:
-            response = f"Based on the textbook content: {context[:500]}... "
-            response += f"This information relates to your query about '{query}'."
+            full_query = f"Context: {selected_text}\nQuestion: {query}"
         
-        return response
-    
-    def log_interaction(self, user_id: str, query: str, response: str, 
-                       selected_text: str = None, chapter_id: str = None) -> bool:
+        # Generate embedding for the query
+        query_embedding = embedding_service.get_embedding_for_content(
+            full_query,
+            language="en",
+            content_type="query"
+        )
+        
+        # Search for similar content in the vector database
+        search_results = vector_db.search_similar(query_embedding, limit=5)
+        
+        if not search_results:
+            return {
+                "query": query,
+                "answer": "I couldn't find relevant information in the textbook to answer your question.",
+                "sources": [],
+                "selected_text_context": selected_text
+            }
+        
+        # Build context from search results
+        context_parts = []
+        sources = []
+        
+        for result in search_results:
+            metadata = result['metadata']
+            context_parts.append(metadata.get('text', ''))  # Use text from metadata if available
+            
+            sources.append({
+                'chapter_id': metadata.get('chapter_id'),
+                'chapter_title': metadata.get('chapter_title'),
+                'similarity_score': result['similarity_score']
+            })
+        
+        context = "\n\n".join(context_parts)
+        
+        # Generate an answer using OpenAI
+        prompt = f"""
+        You are an expert on Physical AI & Humanoid Robotics. Use the following context to answer the question.
+        If the context doesn't contain enough information to answer the question, say so.
+        
+        Context:
+        {context}
+        
+        Question: {query}
+        
+        Answer (provide specific information from the context if available, otherwise say you don't have enough information):
         """
-        Log interaction for analytics and improvement
-        """
+        
         try:
-            interaction = InteractionLog(
-                user_id=user_id,
-                interaction_type="chat_query",
-                content_id=chapter_id,
-                query_text=query,
-                response_text=response,
-                selected_text=selected_text,
-                personalization_applied=None,  # Will add if personalization is applied
-                session_id="session_placeholder"  # Should be passed from the session
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are an expert assistant for a Physical AI & Humanoid Robotics textbook. Provide accurate, helpful answers based on the textbook content. Always cite specific information from the provided context."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=500
             )
-            self.db.add(interaction)
-            self.db.commit()
-            return True
+            
+            answer = response.choices[0].message.content.strip()
+            
+            return {
+                "query": query,
+                "answer": answer,
+                "sources": sources,
+                "selected_text_context": selected_text
+            }
         except Exception as e:
-            print(f"Error logging interaction: {str(e)}")
-            self.db.rollback()
-            return False
+            return {
+                "query": query,
+                "answer": f"Error generating answer: {str(e)}",
+                "sources": sources,
+                "selected_text_context": selected_text
+            }
 
-# Example usage
-if __name__ == "__main__":
-    print("RAG service created")
+    def get_relevant_content(self, query: str, limit: int = 3) -> List[Dict[str, Any]]:
+        """Get relevant content chunks based on a query"""
+        
+        query_embedding = embedding_service.get_embedding_for_content(
+            query,
+            language="en",
+            content_type="query"
+        )
+        
+        search_results = vector_db.search_similar(query_embedding, limit=limit)
+        
+        content_list = []
+        for result in search_results:
+            content_list.append({
+                'chunk_id': result['content_id'],
+                'metadata': result['metadata'],
+                'similarity_score': result['similarity_score']
+            })
+        
+        return content_list

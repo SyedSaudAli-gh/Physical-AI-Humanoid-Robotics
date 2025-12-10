@@ -1,130 +1,75 @@
-from sqlalchemy.orm import Session
-from typing import Dict, Any, Optional
 import json
-from ..models.user_profile import User
-from ..models.chapter import Chapter
+from typing import Dict, Any, List
+from sqlalchemy.orm import Session
+from models.chapter import Chapter
+from models.user_profile import UserProfile
+
 
 class PersonalizationService:
-    """
-    Service for handling content personalization based on user skills and preferences
-    """
-    
     def __init__(self, db: Session):
         self.db = db
-    
-    def get_personalized_content(self, chapter_id: str, user_id: str) -> Dict[str, Any]:
-        """
-        Get chapter content personalized for the user based on their skills and preferences
-        """
-        # Get the chapter
+
+    def get_personalized_chapter_content(self, chapter_id: int, user_id: str) -> Dict[str, Any]:
+        """Get personalized chapter content based on user profile"""
+        
+        # Get the chapter content
         chapter = self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
         if not chapter:
-            raise ValueError(f"Chapter with id {chapter_id} not found")
-        
+            raise ValueError(f"Chapter with ID {chapter_id} not found")
+            
         # Get user profile
-        user = self.db.query(User).filter(User.id == user_id).first()
-        if not user:
-            # If no user profile, return default content
-            return {
-                'id': chapter.id,
-                'title': chapter.title,
-                'content': chapter.content,
-                'module_id': chapter.module_id,
-                'personalization_applied': False,
-                'message': 'No user profile found, showing default content'
-            }
+        user_profile = self.db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        if not user_profile:
+            raise ValueError(f"User profile with ID {user_id} not found")
+            
+        # Determine content based on user's experience level
+        content = chapter.content
         
-        # Parse content variants if they exist
-        content_variants = {}
+        # If chapter has content variants, adapt based on user's level
         if chapter.content_variants:
             try:
-                content_variants = json.loads(chapter.content_variants)
+                variants = json.loads(chapter.content_variants)
+                
+                # Determine user's experience level (default to intermediate if not set)
+                user_level = user_profile.experience_level or "intermediate"
+                
+                # Adjust content based on user level
+                if user_level == "beginner":
+                    content = variants.get("beginner", content)
+                elif user_level == "advanced":
+                    content = variants.get("advanced", content)
+                else:
+                    content = variants.get("intermediate", content)
             except json.JSONDecodeError:
-                # If JSON parsing fails, continue with empty variants
-                content_variants = {}
-        
-        # Determine which content to return based on user preferences
-        preferred_content = chapter.content  # Default to base content
-        
-        # Check for difficulty override in user preferences
-        difficulty_override = None
-        if user.preferences and isinstance(user.preferences, dict):
-            difficulty_override = user.preferences.get('chapter_difficulty_override')
-        
-        # If there's an override, try to use that content variant
-        if difficulty_override and content_variants and content_variants.get(difficulty_override):
-            preferred_content = content_variants[difficulty_override]
-        # Otherwise, try to match content to user's experience level
-        elif user.experience_level and content_variants and content_variants.get(user.experience_level):
-            preferred_content = content_variants[user.experience_level]
-        
-        # Language preference
-        lang_content = preferred_content
-        if user.preferences and user.preferences.get('preferred_language') == 'ur':
-            if content_variants and content_variants.get('urdu'):
-                lang_content = content_variants['urdu']
+                # If JSON parsing fails, use original content
+                pass
+                
+        # Apply personalization based on user's technical skills
+        personalization_applied = self._apply_technical_background_personalization(
+            content, user_profile.technical_skills or []
+        )
         
         return {
-            'id': chapter.id,
-            'title': chapter.title,
-            'content': lang_content,
-            'module_id': chapter.module_id,
-            'personalization_applied': True,
-            'user_profile_used': {
-                'experience_level': user.experience_level,
-                'technical_skills': user.technical_skills,
-                'preferences': user.preferences
-            }
+            "id": chapter.id,
+            "title": chapter.title,
+            "content": personalization_applied,
+            "original_content": chapter.content,
+            "user_experience_level": user_profile.experience_level,
+            "adapted_for_skills": user_profile.technical_skills
         }
-    
-    def generate_content_variants(self, chapter_id: str, base_content: str) -> bool:
-        """
-        Generate different difficulty levels of content based on base content
-        In a real implementation, this would use AI to generate variants
-        """
-        # In a real implementation, this would call an AI service to generate
-        # different versions of the content based on difficulty level
-        # For now, we'll just store the base content as all variants
-        
-        chapter = self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
-        if not chapter:
-            return False
-        
-        # This is a simplified implementation - in reality, AI would generate
-        # different versions of the content for each difficulty level
-        content_variants = {
-            'beginner': self._simplify_content(base_content),
-            'intermediate': base_content,  # Default content
-            'advanced': self._enrich_content(base_content),
-            'urdu': 'یہ چیپٹر کا اردو ورژن ہے'  # Placeholder Urdu translation
-        }
-        
-        # Store the variants in the chapter
-        chapter.content_variants = json.dumps(content_variants)
-        
-        try:
-            self.db.commit()
-            return True
-        except Exception:
-            self.db.rollback()
-            return False
-    
-    def _simplify_content(self, content: str) -> str:
-        """
-        Simplify content for beginner level (in a real implementation)
-        """
-        # This would use NLP techniques to simplify content
-        # For now, return the original content with a note
-        return f"[BEGINNER LEVEL] {content}"
-    
-    def _enrich_content(self, content: str) -> str:
-        """
-        Enrich content for advanced level (in a real implementation)
-        """
-        # This would add more complex examples, deeper explanations, etc.
-        # For now, return the original content with a note
-        return f"[ADVANCED LEVEL] {content} [Additional advanced material would go here]"
 
-# Example usage
-if __name__ == "__main__":
-    print("Personalization service created")
+    def _apply_technical_background_personalization(self, content: str, user_skills: List[str]) -> str:
+        """Adjust content based on user's technical background knowledge"""
+        
+        # If user has advanced skills, provide more concise explanations
+        if "advanced" in str(user_skills).lower() or len([skill for skill in user_skills if skill.lower() in 
+            ["ros", "nvidia-isaac", "gazebo", "unity", "python", "cpp", "machine-learning", "computer-vision"]]) >= 3:
+            
+            # Add more advanced content or skip basic explanations if they exist in the content
+            content += "\n\n> Pro Tip: Since you have advanced experience, consider exploring advanced configuration files and optimizations."
+        
+        # If user is a beginner, add more explanations
+        elif "beginner" in str(user_skills).lower() or len(user_skills) == 0:
+            content += "\n\n> Beginner Tip: For better understanding, try running the code examples in a simulation environment first before implementing on physical robots."
+            
+        return content

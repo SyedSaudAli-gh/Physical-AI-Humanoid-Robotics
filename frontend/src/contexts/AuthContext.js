@@ -1,260 +1,16 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { useHistory, useLocation } from '@docusaurus/router';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
-// Auth context for handling user authentication across the Docusaurus site
-const AuthContext = createContext();
+// Create context
+const AuthContext = createContext(undefined);
 
-// Initial state
-const initialState = {
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  loading: true,
-  error: null
-};
+// API base URL - using relative path for proxy compatibility
+// This will be proxied to the backend during development
+const API_BASE_URL = '/api';
 
-// Action types
-const actionTypes = {
-  LOGIN_START: 'LOGIN_START',
-  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
-  LOGIN_FAILURE: 'LOGIN_FAILURE',
-  LOGOUT: 'LOGOUT',
-  CHECK_AUTH_START: 'CHECK_AUTH_START',
-  CHECK_AUTH_SUCCESS: 'CHECK_AUTH_SUCCESS',
-  CHECK_AUTH_FAILURE: 'CHECK_AUTH_FAILURE',
-  SET_ERROR: 'SET_ERROR'
-};
+// Set up axios defaults
+axios.defaults.withCredentials = true;
 
-// Reducer function
-const authReducer = (state, action) => {
-  switch (action.type) {
-    case actionTypes.LOGIN_START:
-      return {
-        ...state,
-        loading: true,
-        error: null
-      };
-    
-    case actionTypes.LOGIN_SUCCESS:
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        loading: false
-      };
-    
-    case actionTypes.LOGIN_FAILURE:
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        loading: false,
-        error: action.payload
-      };
-    
-    case actionTypes.LOGOUT:
-      return {
-        ...initialState,
-        loading: false
-      };
-    
-    case actionTypes.CHECK_AUTH_START:
-      return {
-        ...state,
-        loading: true
-      };
-    
-    case actionTypes.CHECK_AUTH_SUCCESS:
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        loading: false
-      };
-    
-    case actionTypes.CHECK_AUTH_FAILURE:
-      return {
-        ...initialState,
-        loading: false
-      };
-    
-    case actionTypes.SET_ERROR:
-      return {
-        ...state,
-        error: action.payload,
-        loading: false
-      };
-    
-    default:
-      return state;
-  }
-};
-
-// Provider component
-export const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
-  const history = useHistory();
-  const location = useLocation();
-
-  // Check authentication status on app load
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  // Function to check authentication status
-  const checkAuthStatus = async () => {
-    dispatch({ type: actionTypes.CHECK_AUTH_START });
-    
-    try {
-      // Check if token exists in localStorage
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        // Verify token with backend (in a real implementation)
-        // const response = await fetch('/api/auth/verify', {
-        //   headers: { 'Authorization': `Bearer ${token}` }
-        // });
-        // 
-        // if (response.ok) {
-        //   const userData = await response.json();
-        //   dispatch({ 
-        //     type: actionTypes.CHECK_AUTH_SUCCESS, 
-        //     payload: { user: userData, token } 
-        //   });
-        // } else {
-        //   throw new Error('Token verification failed');
-        // }
-        
-        // For this example, we'll just retrieve user data from localStorage
-        const user = localStorage.getItem('user');
-        if (user) {
-          dispatch({ 
-            type: actionTypes.CHECK_AUTH_SUCCESS, 
-            payload: { user: JSON.parse(user), token } 
-          });
-        } else {
-          throw new Error('No user data found');
-        }
-      } else {
-        dispatch({ type: actionTypes.CHECK_AUTH_FAILURE });
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      dispatch({ type: actionTypes.CHECK_AUTH_FAILURE });
-    }
-  };
-
-  // Function to login user
-  const login = async (email, password) => {
-    dispatch({ type: actionTypes.LOGIN_START });
-    
-    try {
-      // Call login API
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
-      }
-      
-      const data = await response.json();
-      
-      // Save token and user data to localStorage
-      localStorage.setItem('auth_token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      
-      dispatch({ 
-        type: actionTypes.LOGIN_SUCCESS, 
-        payload: { user: data.user, token: data.access_token } 
-      });
-      
-      // Redirect to previous location or home
-      const redirectTo = localStorage.getItem('redirectTo') || '/';
-      localStorage.removeItem('redirectTo');
-      history.push(redirectTo);
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Login error:', error);
-      dispatch({ type: actionTypes.LOGIN_FAILURE, payload: error.message });
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Function to register user
-  const register = async (userData) => {
-    dispatch({ type: actionTypes.LOGIN_START });
-    
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData)
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Registration failed');
-      }
-      
-      const data = await response.json();
-      
-      // Save token and user data to localStorage
-      // Note: In a real implementation, you'd need to log in after registration
-      // or the API would return the token directly
-      localStorage.setItem('user', JSON.stringify(data));
-      
-      dispatch({ 
-        type: actionTypes.LOGIN_SUCCESS, 
-        payload: { user: data, token: null } // Token would come from login after verification
-      });
-      
-      return { success: true };
-    } catch (error) {
-      console.error('Registration error:', error);
-      dispatch({ type: actionTypes.LOGIN_FAILURE, payload: error.message });
-      return { success: false, error: error.message };
-    }
-  };
-
-  // Function to logout user
-  const logout = () => {
-    // Clear from localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    
-    dispatch({ type: actionTypes.LOGOUT });
-    
-    // Redirect to home
-    history.push('/');
-  };
-
-  const value = {
-    ...state,
-    login,
-    register,
-    logout,
-    checkAuthStatus
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-// Custom hook to use the auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -263,4 +19,127 @@ export const useAuth = () => {
   return context;
 };
 
-export default AuthContext;
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Check for existing session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        // Try to get user info to verify session
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          // If we have a token, verify it by making a request to the backend
+          try {
+            const response = await axios.get(`${API_BASE_URL}/auth/me`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            if (response.data && response.data.user) {
+              setUser(response.data.user);
+            }
+          } catch (verifyError) {
+            // If token verification fails, clear it
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            console.error('Token verification failed:', verifyError);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        // Clear any stored auth data if verification fails
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSession();
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      // Call the backend login endpoint
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+        email,
+        password
+      });
+
+      // Store token from response
+      if (response.data.access_token) {
+        localStorage.setItem('auth_token', response.data.access_token);
+
+        // Now fetch user details using the token
+        const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${response.data.access_token}`
+          }
+        });
+
+        if (userResponse.data && userResponse.data.user) {
+          localStorage.setItem('user', JSON.stringify(userResponse.data.user));
+          setUser(userResponse.data.user);
+        }
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      if (error.response) {
+        // Server responded with error status
+        console.error('Error details:', error.response.data);
+        throw new Error(error.response.data.detail || 'Login failed');
+      } else if (error.request) {
+        // Request was made but no response received
+        throw new Error('Network error - could not reach authentication server');
+      } else {
+        // Something else happened
+        throw new Error('An unexpected error occurred during login');
+      }
+    }
+  };
+
+  const signup = async (userData) => {
+    try {
+      // Call the backend signup endpoint
+      const response = await axios.post(`${API_BASE_URL}/auth/signup`, userData);
+
+      // Store token and user information after successful signup
+      if (response.data.access_token) {
+        localStorage.setItem('auth_token', response.data.access_token);
+      }
+      if (response.data.user) {
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        setUser(response.data.user);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    }
+  };
+
+  const logout = () => {
+    // Clear stored authentication data
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  const isAuthenticated = !!user;
+
+  const value = {
+    user,
+    loading,
+    login,
+    signup,
+    logout,
+    isAuthenticated
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

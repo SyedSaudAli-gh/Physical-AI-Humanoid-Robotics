@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List
-from ..models.module import Module
-from ..models.chapter import Chapter
+from models.module import Module
+from models.chapter import Chapter
 from pydantic import BaseModel
 
 class ModuleCreate(BaseModel):
