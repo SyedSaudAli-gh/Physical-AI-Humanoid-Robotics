@@ -1,0 +1,42 @@
+{
+  "theme.footer.title": {
+    "message": "Physical AI & Humanoid Robotics Book",
+    "description": "The title in the footer"
+  },
+  "theme.footer.links.title": {
+    "message": "Links",
+    "description": "The title of the links column in the footer"
+  },
+  "theme.footer.link.item": {
+    "message": "{label}",
+    "description": "The label of footer links"
+  },
+  "theme.footer.copyright": {
+    "message": "Copyright © 2025 Physical AI & Humanoid Robotics Book. Built with Docusaurus.",
+    "description": "The footer copyright line"
+  },
+  "theme.docs.sidebar.collapseButtonTitle": {
+    "message": "Collapse sidebar",
+    "description": "The title attribute for the collapse button of the sidebar"
+  },
+  "theme.docs.sidebar.expandButtonTitle": {
+    "message": "Expand sidebar",
+    "description": "The title attribute for the expand button of the sidebar"
+  },
+  "theme.docs.sidebar.expandButtonAriaLabel": {
+    "message": "Expand sidebar",
+    "description": "The ARIA label for the expand button of the sidebar"
+  },
+  "theme.navbar.mobileSidebarSecondaryMenu.backButtonLabel": {
+    "message": "← Back to main menu",
+    "description": "The label of the back button to return to main menu, inside the mobile navbar sidebar secondary menu (notably used to display the docs sidebar)"
+  },
+  "theme.navbar.mobileVersionsDropdown.label": {
+    "message": "Select version",
+    "description": "The label for the navbar versions dropdown on mobile view"
+  },
+  "theme.navbar.mobileLanguageDropdown.label": {
+    "message": "Select language",
+    "description": "The label for the mobile language switcher dropdown"
+  }
+}

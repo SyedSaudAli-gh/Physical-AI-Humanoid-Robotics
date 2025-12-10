@@ -1,0 +1,159 @@
+/**
+ * Custom CSS for Urdu translation functionality
+ */
+
+/* Urdu font styles */
+.urduContent {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif !important;
+  direction: rtl;
+  text-align: right;
+  line-height: 1.8;
+}
+
+.urduContent p,
+.urduContent li,
+.urduContent h1,
+.urduContent h2,
+.urduContent h3,
+.urduContent h4,
+.urduContent h5,
+.urduContent h6 {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', 'Urdu Typesetting', serif !important;
+  direction: rtl;
+  text-align: right;
+}
+
+/* Ensure code blocks remain LTR in RTL content */
+.urduContent code,
+.urduContent pre {
+  direction: ltr;
+  text-align: left;
+  font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
+}
+
+.urduContent pre {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Preserve image alignment in RTL mode */
+.urduContent img {
+  display: block;
+  margin: 0 auto;
+}
+
+/* RTL-specific margin adjustments */
+[dir="rtl"] .alert {
+  border-right: 4px solid;
+  border-left: none;
+}
+
+/* Translation loading overlay */
+.translation-overlay {
+  position: relative;
+}
+
+.translation-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.translation-loading {
+  text-align: center;
+  padding: 20px;
+}
+
+/* Container for translation button */
+.translationButtonContainer {
+  display: inline-block;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: white;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90vh;
+  width: 800px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modalTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.closeButton:hover {
+  background-color: #f0f0f0;
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  max-height: 60vh;
+}
+
+.modalFooter {
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+  .modalContent {
+    width: 95%;
+    max-height: 95vh;
+  }
+}

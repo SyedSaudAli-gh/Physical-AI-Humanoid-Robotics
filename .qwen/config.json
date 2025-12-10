@@ -1,0 +1,56 @@
+{
+  "content_generation_pipeline": {
+    "default_settings": {
+      "target_audience": "undergraduate_students",
+      "target_word_count": 3000,
+      "readability_target_grade_level": 10,
+      "quality_threshold": 0.8,
+      "supported_modules": [
+        "ROS 2",
+        "Gazebo & Unity", 
+        "NVIDIA Isaac",
+        "Vision-Language-Action"
+      ]
+    },
+    "validation_requirements": {
+      "authoritative_sources_check": true,
+      "readability_check": true,
+      "technical_accuracy_check": true,
+      "plagiarism_check": true,
+      "minimum_quality_score": 0.7
+    },
+    "content_quality_standards": {
+      "required_sections": [
+        "Learning Outcomes",
+        "Theoretical Foundations", 
+        "Practical Simulations",
+        "Code Examples",
+        "Chapter Summary"
+      ],
+      "min_code_examples_per_chapter": 1,
+      "min_diagrams_per_chapter": 1,
+      "max_flesch_kincaid_grade": 10,
+      "min_originality_score": 0.95
+    },
+    "ai_generation_settings": {
+      "model": "Qwen1.5-7B-Chat",
+      "temperature": 0.7,
+      "max_tokens": 4000,
+      "top_p": 0.9,
+      "frequency_penalty": 0.5,
+      "presence_penalty": 0.5
+    },
+    "post_generation_processing": {
+      "auto_translation_to_urdu": true,
+      "content_personalization": true,
+      "difficulty_variants_generation": true,
+      "validation_automation": true
+    },
+    "quality_assurance": {
+      "auto_verification": true,
+      "human_review_required": false,
+      "review_threshold": 0.6,
+      "feedback_integration": true
+    }
+  }
+}
