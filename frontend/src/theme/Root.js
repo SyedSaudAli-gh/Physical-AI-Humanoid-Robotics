@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { UserProvider } from '../contexts/UserContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import RAGChatbot from '../components/RAGChatbot';
-import AuthNavbarItem from '../components/AuthNavbarItem';
 
 // Default implementation, that you can customize
 function Root({ children }) {
@@ -37,10 +36,6 @@ function Root({ children }) {
     <AuthProvider>
       <UserProvider>
         <>
-          {/* Add the AuthNavbarItem as a global element */}
-          <div style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 1000 }}>
-            <AuthNavbarItem />
-          </div>
           {children}
           <RAGChatbot selectedText={selectedText} />
         </>

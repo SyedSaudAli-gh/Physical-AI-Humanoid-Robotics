@@ -110,16 +110,30 @@ export const AuthProvider = ({ children }) => {
       // Store token and user information after successful signup
       if (response.data.access_token) {
         localStorage.setItem('auth_token', response.data.access_token);
-      }
-      if (response.data.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        setUser(response.data.user);
+
+        // Fetch complete user details after signup
+        const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${response.data.access_token}`
+          }
+        });
+
+        if (userResponse.data && userResponse.data.user) {
+          localStorage.setItem('user', JSON.stringify(userResponse.data.user));
+          setUser(userResponse.data.user);
+        }
       }
 
       return response.data;
     } catch (error) {
       console.error('Signup error:', error);
-      throw error;
+      if (error.response) {
+        throw new Error(error.response.data.detail || 'Signup failed');
+      } else if (error.request) {
+        throw new Error('Network error - could not reach authentication server');
+      } else {
+        throw new Error('An unexpected error occurred during signup');
+      }
     }
   };
 
@@ -130,6 +144,25 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Function to update user profile
+  const updateUserProfile = (updatedData) => {
+    if (user) {
+      const updatedUser = { ...user, ...updatedData };
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+  };
+
+  // Function to check if a user has specific skills
+  const hasSkill = (skill) => {
+    return user && user.technical_skills && user.technical_skills.includes(skill);
+  };
+
+  // Function to get user's experience level
+  const getExperienceLevel = () => {
+    return user ? user.experience_level : null;
+  };
+
   const isAuthenticated = !!user;
 
   const value = {
@@ -138,7 +171,10 @@ export const AuthProvider = ({ children }) => {
     login,
     signup,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    updateUserProfile,
+    hasSkill,
+    getExperienceLevel
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

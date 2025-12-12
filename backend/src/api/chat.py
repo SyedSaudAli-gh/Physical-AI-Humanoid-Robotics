@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Dict, Any
-from database import get_db
-from services.rag_service import RAGService
+from ..database import get_db
+from ..services.rag_service import RAGService
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])

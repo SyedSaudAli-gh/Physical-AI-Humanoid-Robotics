@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
-from database import get_db
-from services.translation_service import TranslationService
+from ..database import get_db
+from ..services.translation_service import TranslationService
 
 router = APIRouter(prefix="/translate", tags=["translation"])
 

@@ -115,42 +115,25 @@ const config = {
           src: 'img/logo.svg',
         },
         items: [
-          {
-            to: '/',
-            label: 'Home',
-            position: 'left',
-          },
-          {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
-            position: 'left',
-            label: 'Book',
-          },
-          {
-            type: 'localeDropdown',
-            position: 'right',
-          },
-          {
-            type: 'dropdown',
-            label: '👤',
-            position: 'right',
-            items: [
-              {
-                label: 'Login',
-                to: '/login',
-              },
-              {
-                label: 'Signup',
-                to: '/signup',
-              },
-            ],
-          },
-          {
-            href: 'https://github.com/facebook/docusaurus',
-            label: 'GitHub',
-            position: 'right',
-          },
-        ],
+  { to: '/', label: 'Home', position: 'left' },
+
+  // Language dropdown
+  { type: 'localeDropdown', position: 'right' },
+
+  {
+    type: 'html',
+    position: 'right',
+    value: '<div id="auth-navbar-placeholder"></div>',
+  },
+
+  // GitHub link
+  {
+    href: 'https://github.com/syedsaudali-gh/Physical-AI-Humanoid-Robotics',
+    className: 'header-github-link',
+    'aria-label': 'GitHub repository',
+    position: 'right',
+  },
+],
       },
       footer: {
         style: 'dark',
@@ -198,37 +181,62 @@ const config = {
         darkTheme: darkCodeTheme,
       },
     }),
-  
-  plugins: [
-    // Add any necessary plugins here
-    // Only include the API plugin if the 'api' directory exists
-    // [
-    //   '@docusaurus/plugin-content-docs',
-    //   {
-    //     id: 'api',
-    //     path: 'api',
-    //     routeBasePath: 'api',
-    //     sidebarPath: require.resolve('./sidebars.js'),
-    //   },
-    // ],
-  ],
 
   // Development server proxy configuration
   staticDirectories: ['static'],
 
-  plugins: [
-    // Add any necessary plugins here
-    // Only include the API plugin if the 'api' directory exists
-    // [
-    //   '@docusaurus/plugin-content-docs',
-    //   {
-    //     id: 'api',
-    //     path: 'api',
-    //     routeBasePath: 'api',
-    //     sidebarPath: require.resolve('./sidebars.js'),
-    //   },
-    // ],
+  // Proxy /api to backend during development
+  themes: [
+    // Add theme plugins here
   ],
+
+  // Client modules for custom functionality
+  clientModules: [
+    require.resolve('./src/clientModules/authNavbar.js'),
+  ],
+
+  plugins: [
+  ],
+
+  // Proxy configuration for development
+  webpack: {
+    jsLoader: (isServer) => ({
+      loader: require.resolve('swc-loader'),
+      options: {
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: true,
+          },
+          target: 'es2017',
+        },
+        module: {
+          type: isServer ? 'commonjs' : 'es6',
+        },
+      },
+    }),
+  },
+
+  // Place non-standard custom fields in customFields
+  customFields: {
+    devServer: {
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8000', // Backend server address
+          changeOrigin: true,
+          secure: false, // Set to true if backend uses HTTPS
+          logLevel: 'debug',
+          onError: (err, req, res) => {
+            console.error('Proxy error:', err);
+            res.writeHead(500, {
+              'Content-Type': 'application/json',
+            });
+            res.end(JSON.stringify({ error: 'Proxy error occurred' }));
+          },
+        },
+      },
+    },
+  },
 };
 
 module.exports = config;

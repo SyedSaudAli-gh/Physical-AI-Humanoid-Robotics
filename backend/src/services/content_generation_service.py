@@ -39,57 +39,25 @@ class ContentGenerationService:
                 raise ValueError(f"Module with ID {module_id} not found")
             
             # Create a new chapter
-            from uuid import uuid4
-            new_chapter = Chapter(
-                id=str(uuid4()),
+            chapter = Chapter(
                 module_id=module_id,
-                title=content_data['title'],
+                title=title,
                 content=content_data['content'],
-                content_variants=str({}),  # Initialize as empty, will add variants later
-                order_index=self._get_next_chapter_order_index(module_id),
-                learning_outcomes=content_data['learning_outcomes']
+                content_variants=json.dumps(content_data['content_variants']),
+                urdu_translation=content_data.get('urdu_translation', '')
             )
-            
-            # Add to database
-            self.db.add(new_chapter)
+            self.db.add(chapter)
             self.db.commit()
-            self.db.refresh(new_chapter)
+            self.db.refresh(chapter)
             
-            # Generate content variants (different difficulty levels)
-            self._generate_content_variants(new_chapter.id, content_data['content'])
-            
-            # Generate Urdu translation
-            self._generate_urdu_translation(new_chapter.id, content_data['content'])
-            
-            return new_chapter
-            
+            return chapter
         except Exception as e:
-            print(f"Error generating chapter content: {str(e)}")
-            self.db.rollback()
-            return None
+            raise Exception(f"Chapter content generation failed: {str(e)}")
     
-    def _get_next_chapter_order_index(self, module_id: str) -> int:
+    def generate_content_variants(self, chapter_id: str, base_content: str):
         """
-        Get the next order index for a chapter in a module
+        Generate content variants for different difficulty levels
         """
-        last_chapter = self.db.query(Chapter).filter(
-            Chapter.module_id == module_id
-        ).order_by(Chapter.order_index.desc()).first()
-        
-        if last_chapter:
-            return last_chapter.order_index + 1
-        else:
-            return 1
-    
-    def _generate_content_variants(self, chapter_id: str, base_content: str):
-        """
-        Generate different difficulty levels of the content
-        """
-        # In a real implementation, this would call an AI service to generate
-        # different versions of the content for each difficulty level
-        # For now, we'll just store the base content as all variants
-        
-        # This would be implemented with difficulty adjustment techniques
         content_variants = {
             'beginner': self._simplify_content(base_content),
             'intermediate': base_content,  # Default content

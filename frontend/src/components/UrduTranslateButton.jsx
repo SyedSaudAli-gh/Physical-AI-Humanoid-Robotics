@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useUser } from '../contexts/UserContext';
-import styles from './UrduTranslation.module.css';
+import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
-// Urdu translation button component with modal
+// Urdu translation button component with toggle functionality
 const UrduTranslateButton = ({
   content,
+  chapterId,
+  onTranslationComplete,
   isLoggedIn = true
 }) => {
   const [isTranslating, setIsTranslating] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [translatedText, setTranslatedText] = useState('');
+  const [translatedContent, setTranslatedContent] = useState(null);
+  const [isUrduView, setIsUrduView] = useState(false);
   const [error, setError] = useState(null);
-  const { user, loading } = useUser();
+  const { user, loading: authLoading } = useAuth();
 
   // Only show the button if the user is logged in
   if (!isLoggedIn || !user) {
@@ -19,101 +21,101 @@ const UrduTranslateButton = ({
   }
 
   const handleTranslate = async () => {
-    if (!content || isTranslating || loading) return;
+    if ((!content && !chapterId) || isTranslating || authLoading) return;
 
     setIsTranslating(true);
     setError(null);
 
     try {
-      // Call the backend translation API
-      const response = await fetch('http://localhost:8000/translate-urdu', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: content
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // If we have a chapterId, use the chapter-specific translation endpoint
+      let response;
+      if (chapterId) {
+        response = await axios.post('/api/translate/chapter-urdu', {
+          chapter_id: chapterId
+        });
+      } else {
+        // Otherwise, translate the provided content
+        response = await axios.post('/api/translate', {
+          content: content,
+          target_language: 'ur'
+        });
       }
 
-      const data = await response.json();
-      setTranslatedText(data.urdu_text);
-      setIsModalOpen(true);
+      if (response.data && response.data.urdu_content) {
+        setTranslatedContent(response.data.urdu_content);
+        setIsUrduView(true);
+        if (onTranslationComplete) {
+          onTranslationComplete(response.data.urdu_content);
+        }
+      } else if (response.data && response.data.translated_content) {
+        setTranslatedContent(response.data.translated_content);
+        setIsUrduView(true);
+        if (onTranslationComplete) {
+          onTranslationComplete(response.data.translated_content);
+        }
+      }
     } catch (error) {
       console.error('Translation error:', error);
       setError('ترجمہ میں مسئلہ، دوبارہ کوشش کریں');
-      alert('ترجمہ میں مسئلہ، دوبارہ کوشش کریں');
+      alert('Translation failed: ' + (error.response?.data?.detail || error.message));
     } finally {
       setIsTranslating(false);
     }
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setTranslatedText('');
+  const toggleView = () => {
+    setIsUrduView(!isUrduView);
   };
 
-  // Handle Escape key to close modal
+  const toggleTranslation = () => {
+    if (isUrduView) {
+      // Switch back to English
+      setIsUrduView(false);
+    } else {
+      // Switch to Urdu if we have translation, otherwise fetch it
+      if (translatedContent) {
+        setIsUrduView(true);
+      } else {
+        handleTranslate();
+      }
+    }
+  };
+
+  // Handle Escape key to switch back to English
   useEffect(() => {
     const handleEscKey = (e) => {
-      if (e.key === 'Escape' && isModalOpen) {
-        closeModal();
+      if (e.key === 'Escape' && isUrduView) {
+        setIsUrduView(false);
       }
     };
 
     window.addEventListener('keydown', handleEscKey);
     return () => window.removeEventListener('keydown', handleEscKey);
-  }, [isModalOpen]);
+  }, [isUrduView]);
 
   return (
-    <div className={styles.translationButtonContainer}>
+    <div className="urdu-translation-container">
       <button
-        className={`button button--${isTranslating ? 'secondary' : 'primary'}`}
-        onClick={handleTranslate}
-        disabled={isTranslating || loading}
+        className={`button ${isUrduView ? 'button--secondary' : 'button--primary'}`}
+        onClick={toggleTranslation}
+        disabled={isTranslating || authLoading}
+        title={isUrduView ? 'Switch to English' : 'Translate to Urdu'}
       >
         {isTranslating ? (
           <>
-            <span className="loading-spinner loading-spinner--sm"></span> ترجمہ ہو رہا ہے...
+            <span className="margin-right--sm">🔄</span>
+            Translating...
           </>
+        ) : isUrduView ? (
+          'English'
         ) : (
-          'اردو میں ترجمہ'
+          'اردو'
         )}
       </button>
 
-      {/* Modal for displaying translated text */}
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>ترجمہ شدہ مواد</h3>
-              <button
-                className={styles.closeButton}
-                onClick={closeModal}
-                aria-label="Close modal"
-              >
-                ×
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <div
-                className={styles.urduContent}
-                dangerouslySetInnerHTML={{ __html: translatedText.replace(/\n/g, '<br />') }}
-              />
-            </div>
-            <div className={styles.modalFooter}>
-              <button
-                className="button button--primary"
-                onClick={closeModal}
-              >
-                انگریزی میں واپس
-              </button>
-            </div>
-          </div>
+      {error && (
+        <div className="alert alert--danger margin-top--sm" role="alert">
+          {error}
         </div>
       )}
     </div>

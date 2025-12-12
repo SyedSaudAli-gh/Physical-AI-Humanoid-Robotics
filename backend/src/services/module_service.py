@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List
-from models.module import Module
-from models.chapter import Chapter
+from ..models.module import Module
+from ..models.chapter import Chapter
 from pydantic import BaseModel
 
 class ModuleCreate(BaseModel):
@@ -32,9 +32,7 @@ class ModuleService:
         """
         Create a new textbook module
         """
-        from uuid import uuid4
         module = Module(
-            id=str(uuid4()),
             name=module_data.name,
             description=module_data.description,
             order_index=module_data.order_index,
@@ -46,7 +44,7 @@ class ModuleService:
         self.db.refresh(module)
         return module
     
-    def get_module_by_id(self, module_id: str) -> Module:
+    def get_module_by_id(self, module_id: int) -> Module:  # Changed to int
         """
         Retrieve a module by its ID
         """
@@ -54,11 +52,11 @@ class ModuleService:
     
     def get_all_modules(self) -> List[Module]:
         """
-        Retrieve all textbook modules
+        Retrieve all modules
         """
         return self.db.query(Module).order_by(Module.order_index).all()
     
-    def update_module(self, module_id: str, module_data: ModuleCreate) -> Module:
+    def update_module(self, module_id: int, module_data: ModuleCreate) -> Module:  # Changed to int
         """
         Update an existing module
         """
@@ -70,7 +68,7 @@ class ModuleService:
             self.db.refresh(module)
         return module
     
-    def delete_module(self, module_id: str) -> bool:
+    def delete_module(self, module_id: int) -> bool:  # Changed to int
         """
         Delete a module by its ID
         """
@@ -87,7 +85,7 @@ class ModuleService:
             return True
         return False
     
-    def get_module_with_chapters(self, module_id: str) -> Module:
+    def get_module_with_chapters(self, module_id: int) -> Module:  # Changed to int
         """
         Retrieve a module with its associated chapters
         """

@@ -15,28 +15,32 @@ const AuthNavbarItem = () => {
 
   if (isAuthenticated && user) {
     return (
-      <div className="navbar__item dropdown dropdown--hoverable">
-        <span className="navbar__link">
-          {user.name || user.email} ▾
+      <div className="navbar__item dropdown dropdown--hoverable dropdown--right">
+        <span className="navbar__link navbar__link--icon">
+          <span className="avatar">
+            <span className="avatar__name">{user.name?.charAt(0) || user.email?.charAt(0)}</span>
+          </span>
+          <span className="dropdown__label">{user.name || user.email.split('@')[0]}</span>
+          <span className="dropdown__caret">▾</span>
         </span>
         <ul className="dropdown__menu">
           <li>
             <a className="dropdown__link" href="/user-profile">
-              Profile
+              <i className="fa fa-user"></i> Profile
             </a>
           </li>
           <li>
-            <a className="dropdown__link" href="/settings">
-              Settings
+            <a className="dropdown__link" href="/user-settings">
+              <i className="fa fa-cog"></i> Settings
             </a>
           </li>
           <li>
-            <button 
-              className="dropdown__link" 
+            <button
+              className="dropdown__link"
               onClick={logout}
               style={{ width: '100%', textAlign: 'left', cursor: 'pointer', border: 'none', background: 'none' }}
             >
-              Logout
+              <i className="fa fa-sign-out"></i> Logout
             </button>
           </li>
         </ul>
@@ -44,19 +48,20 @@ const AuthNavbarItem = () => {
     );
   } else {
     return (
-      <div className="navbar__item dropdown dropdown--hoverable">
-        <span className="navbar__link">
-          👤 ▾
+      <div className="navbar__item dropdown dropdown--hoverable dropdown--right">
+        <span className="navbar__link navbar__link--icon">
+          <span className="dropdown__label">👤 Account</span>
+          <span className="dropdown__caret">▾</span>
         </span>
         <ul className="dropdown__menu">
           <li>
             <a className="dropdown__link" href="/login">
-              Login
+              <i className="fa fa-sign-in"></i> Login
             </a>
           </li>
           <li>
             <a className="dropdown__link" href="/signup">
-              Sign Up
+              <i className="fa fa-user-plus"></i> Sign Up
             </a>
           </li>
         </ul>

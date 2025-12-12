@@ -1,7 +1,7 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from models.user_profile import UserProfile
+from ..models.user_profile import UserProfile
 from passlib.context import CryptContext
 import uuid
 

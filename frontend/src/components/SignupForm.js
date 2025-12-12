@@ -70,179 +70,182 @@ const SignupForm = () => {
 
   if (success) {
     return (
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-md-6">
-            <div className="card">
-              <div className="card-body text-center">
-                <h3 className="card-title">Account Created Successfully!</h3>
-                <p>Thank you for signing up. Please check your email to verify your account.</p>
-                <a href="/" className="btn btn-primary">Go to Home</a>
-              </div>
-            </div>
-          </div>
+      <div className="auth-form-container">
+        <div className="text-center">
+          <h2>Account Created Successfully!</h2>
+          <p>Thank you for signing up. Please check your email to verify your account.</p>
+          <a href="/" className="button button--primary">Go to Home</a>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header">
-              <h3>Create Account</h3>
-              <p>Step {currentStep} of 2</p>
+    <div className="auth-form-container">
+      <div className="auth-form-step-indicator">
+        <h2>Create Account</h2>
+        <p>Step {currentStep} of 2</p>
+      </div>
+
+      {currentStep === 1 && (
+        <form onSubmit={(e) => { e.preventDefault(); setCurrentStep(2); }}>
+          <div className="form-group margin-bottom--md">
+            <label htmlFor="name" className="form-label">Full Name</label>
+            <input
+              type="text"
+              className="form-control"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group margin-bottom--md">
+            <label htmlFor="email" className="form-label">Email</label>
+            <input
+              type="email"
+              className="form-control"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="form-group margin-bottom--md">
+            <label htmlFor="password" className="form-label">Password</label>
+            <input
+              type="password"
+              className="form-control"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="margin-top--lg">
+            <button type="submit" className="button button--primary button--lg button--block">
+              Continue to Background Info
+            </button>
+          </div>
+
+          {error && (
+            <div className="alert alert--danger margin-top--md" role="alert">
+              {error}
             </div>
-            <div className="card-body">
-              {currentStep === 1 && (
-                <form onSubmit={(e) => { e.preventDefault(); setCurrentStep(2); }}>
-                  <div className="form-group mb-3">
-                    <label htmlFor="name" className="form-label">Full Name</label>
+          )}
+        </form>
+      )}
+
+      {currentStep === 2 && (
+        <form onSubmit={handleSubmit}>
+          <div className="margin-bottom--lg">
+            <h3>Technical Background</h3>
+            <p className="text--secondary">Help us personalize your learning experience</p>
+          </div>
+
+          <div className="margin-bottom--md">
+            <p><strong>Technical Skills:</strong> Select all that apply</p>
+            <div className="checkbox-group">
+              {['ROS', 'NVIDIA Isaac', 'Gazebo', 'Unity', 'Python', 'C++', 'Machine Learning', 'Computer Vision'].map(skill => (
+                <div className="form-group" key={skill}>
+                  <label className="checkbox">
                     <input
-                      type="text"
-                      className="form-control"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
+                      type="checkbox"
+                      value={skill}
+                      checked={formData.technical_skills.includes(skill)}
+                      onChange={handleSkillChange}
                     />
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      id="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="d-grid">
-                    <button type="submit" className="btn btn-primary">Next: Background Info</button>
-                  </div>
-                </form>
-              )}
-
-              {currentStep === 2 && (
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <p><strong>Technical Skills:</strong></p>
-                    {['ROS', 'NVIDIA Isaac', 'Gazebo', 'Unity', 'Python', 'C++', 'Machine Learning', 'Computer Vision'].map(skill => (
-                      <div className="form-check" key={skill}>
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          id={`skill-${skill}`}
-                          value={skill}
-                          checked={formData.technical_skills.includes(skill)}
-                          onChange={handleSkillChange}
-                        />
-                        <label className="form-check-label" htmlFor={`skill-${skill}`}>
-                          {skill}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label htmlFor="experience_level" className="form-label">Experience Level</label>
-                    <select
-                      className="form-select"
-                      id="experience_level"
-                      name="experience_level"
-                      value={formData.experience_level}
-                      onChange={handleChange}
-                    >
-                      <option value="beginner">Beginner</option>
-                      <option value="intermediate">Intermediate</option>
-                      <option value="advanced">Advanced</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label htmlFor="background_software_exp" className="form-label">Software Experience</label>
-                    <textarea
-                      className="form-control"
-                      id="background_software_exp"
-                      name="background_software_exp"
-                      value={formData.background_questionnaire.software_exp}
-                      onChange={handleChange}
-                      placeholder="Describe your software development experience..."
-                    />
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label htmlFor="background_hardware_access" className="form-label">Hardware Access</label>
-                    <textarea
-                      className="form-control"
-                      id="background_hardware_access"
-                      name="background_hardware_access"
-                      value={formData.background_questionnaire.hardware_access}
-                      onChange={handleChange}
-                      placeholder="What hardware do you have access to? (simulation environment, physical robots, etc.)"
-                    />
-                  </div>
-
-                  <div className="form-group mb-3">
-                    <label htmlFor="background_ros_knowledge" className="form-label">ROS Knowledge</label>
-                    <textarea
-                      className="form-control"
-                      id="background_ros_knowledge"
-                      name="background_ros_knowledge"
-                      value={formData.background_questionnaire.ros_knowledge}
-                      onChange={handleChange}
-                      placeholder="Describe your experience with ROS/ROS2..."
-                    />
-                  </div>
-
-                  <div className="d-flex justify-content-between">
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
-                      onClick={() => setCurrentStep(1)}
-                    >
-                      Back
-                    </button>
-                    <button type="submit" className="btn btn-primary">Sign Up</button>
-                  </div>
-                </form>
-              )}
-
-              {error && (
-                <div className="alert alert-danger mt-3" role="alert">
-                  {error}
+                    <span className="checkbox__label">{skill}</span>
+                  </label>
                 </div>
-              )}
+              ))}
             </div>
           </div>
 
-          {currentStep === 1 && (
-            <div className="text-center mt-3">
-              <p>Already have an account? <a href="/login">Login here</a></p>
+          <div className="form-group margin-bottom--md">
+            <label htmlFor="experience_level" className="form-label">Experience Level</label>
+            <select
+              className="form-select"
+              id="experience_level"
+              name="experience_level"
+              value={formData.experience_level}
+              onChange={handleChange}
+            >
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+
+          <div className="form-group margin-bottom--md">
+            <label htmlFor="background_software_exp" className="form-label">Software Experience</label>
+            <textarea
+              className="form-control"
+              id="background_software_exp"
+              name="background_software_exp"
+              value={formData.background_questionnaire.software_exp}
+              onChange={handleChange}
+              placeholder="Describe your software development experience..."
+              rows="3"
+            />
+          </div>
+
+          <div className="form-group margin-bottom--md">
+            <label htmlFor="background_hardware_access" className="form-label">Hardware Access</label>
+            <textarea
+              className="form-control"
+              id="background_hardware_access"
+              name="background_hardware_access"
+              value={formData.background_questionnaire.hardware_access}
+              onChange={handleChange}
+              placeholder="What hardware do you have access to? (simulation environment, physical robots, etc.)"
+              rows="3"
+            />
+          </div>
+
+          <div className="form-group margin-bottom--lg">
+            <label htmlFor="background_ros_knowledge" className="form-label">ROS Knowledge</label>
+            <textarea
+              className="form-control"
+              id="background_ros_knowledge"
+              name="background_ros_knowledge"
+              value={formData.background_questionnaire.ros_knowledge}
+              onChange={handleChange}
+              placeholder="Describe your experience with ROS/ROS2..."
+              rows="3"
+            />
+          </div>
+
+          <div className="d-flex justify-content-between">
+            <button
+              type="button"
+              className="button button--secondary"
+              onClick={() => setCurrentStep(1)}
+            >
+              Back
+            </button>
+            <button type="submit" className="button button--primary">Create Account</button>
+          </div>
+
+          {error && (
+            <div className="alert alert--danger margin-top--md" role="alert">
+              {error}
             </div>
           )}
+        </form>
+      )}
+
+      {currentStep === 1 && (
+        <div className="text--center margin-top--lg">
+          <p>Already have an account? <a href="/login">Login here</a></p>
         </div>
-      </div>
+      )}
     </div>
   );
 };

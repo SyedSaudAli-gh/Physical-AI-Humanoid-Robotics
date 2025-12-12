@@ -1,10 +1,10 @@
 import openai
 from typing import List, Dict, Any
 from sqlalchemy.orm import Session
-from rag.vector_db import vector_db, chunker
-from rag.cohere_embedder import embedding_service
-from models.chapter import Chapter
-from config import settings
+from ..rag.vector_db import vector_db, chunker
+from ..rag.cohere_embedder import embedding_service
+from ..models.chapter import Chapter
+from ..config import settings
 
 
 class RAGService:

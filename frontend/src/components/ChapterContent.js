@@ -75,7 +75,10 @@ const ChapterContent = ({ chapterId }) => {
       <div className="container margin-vert--xl">
         <div className="row">
           <div className="col col--8 col--offset-2">
-            <h1>Loading chapter...</h1>
+            <div className="text--center padding-vert--lg">
+              <h1>Loading chapter...</h1>
+              <div className="loader">Loading...</div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,8 +90,10 @@ const ChapterContent = ({ chapterId }) => {
       <div className="container margin-vert--xl">
         <div className="row">
           <div className="col col--8 col--offset-2">
-            <h1>Error loading chapter</h1>
-            <p>{error}</p>
+            <div className="alert alert--danger">
+              <h1>Error loading chapter</h1>
+              <p>{error}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -100,7 +105,9 @@ const ChapterContent = ({ chapterId }) => {
       <div className="container margin-vert--xl">
         <div className="row">
           <div className="col col--8 col--offset-2">
-            <h1>Chapter not found</h1>
+            <div className="alert alert--warning">
+              <h1>Chapter not found</h1>
+            </div>
           </div>
         </div>
       </div>
@@ -116,8 +123,8 @@ const ChapterContent = ({ chapterId }) => {
         {/* Chapter Content Panel */}
         <div className="col col--8">
           <article className="markdown">
-            <header>
-              <h1>{chapter.title}</h1>
+            <header className="margin-bottom--lg">
+              <h1 className="hero__title">{chapter.title}</h1>
             </header>
 
             {/* Chapter Controls */}
@@ -131,7 +138,8 @@ const ChapterContent = ({ chapterId }) => {
               className="chapter-content"
               style={{
                 lineHeight: '1.6',
-                direction: contentDirection
+                direction: contentDirection,
+                fontFamily: isUrduContent() ? '"Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", serif' : 'inherit'
               }}
             >
               {/* Render chapter content - in a real implementation, you'd properly render markdown */}
@@ -143,8 +151,8 @@ const ChapterContent = ({ chapterId }) => {
             </div>
 
             <section className="margin-vert--lg">
-              <h2>Learning Outcomes</h2>
-              <ul>
+              <h2 className="text--secondary">Learning Outcomes</h2>
+              <ul className="margin-left--lg">
                 {chapter.learning_outcomes.map((outcome, index) => (
                   <li key={index}>{outcome}</li>
                 ))}
@@ -157,10 +165,12 @@ const ChapterContent = ({ chapterId }) => {
         <div className="col col--4">
           <div className="card">
             <div className="card__header">
-              <h3>Textbook Assistant</h3>
+              <h3 className="card__title">Textbook Assistant</h3>
               {selectedText && (
-                <div className="alert alert--info" style={{ marginTop: '0.5rem', fontSize: '0.8em' }}>
-                  <strong>Selected:</strong> "{selectedText.substring(0, 50)}{selectedText.length > 50 ? '...' : ''}"
+                <div className="alert alert--info margin-top--sm">
+                  <small>
+                    <strong>Selected:</strong> "{selectedText.substring(0, 50)}{selectedText.length > 50 ? '...' : ''}"
+                  </small>
                 </div>
               )}
             </div>

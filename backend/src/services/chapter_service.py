@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from models.chapter import Chapter
-from models.content import BookContent
+from ..models.chapter import Chapter
+from ..models.content import BookContent
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -34,9 +34,7 @@ class ChapterService:
         """
         Create a new chapter
         """
-        from uuid import uuid4
         chapter = Chapter(
-            id=str(uuid4()),
             module_id=chapter_data.module_id,
             title=chapter_data.title,
             content=chapter_data.content,
@@ -49,19 +47,11 @@ class ChapterService:
         self.db.refresh(chapter)
         return chapter
     
-    def get_chapter_by_id(self, chapter_id: str) -> Chapter:
+    def get_chapter_by_id(self, chapter_id: int) -> Chapter:  # Changed to int
         """
         Retrieve a chapter by its ID
         """
         return self.db.query(Chapter).filter(Chapter.id == chapter_id).first()
-    
-    def get_chapters_by_module(self, module_id: str) -> List[Chapter]:
-        """
-        Retrieve all chapters for a specific module
-        """
-        return self.db.query(Chapter).filter(
-            Chapter.module_id == module_id
-        ).order_by(Chapter.order_index).all()
     
     def get_all_chapters(self) -> List[Chapter]:
         """
@@ -69,7 +59,7 @@ class ChapterService:
         """
         return self.db.query(Chapter).all()
     
-    def update_chapter(self, chapter_id: str, chapter_data: ChapterCreate) -> Chapter:
+    def update_chapter(self, chapter_id: int, chapter_data: ChapterCreate) -> Chapter:  # Changed to int
         """
         Update an existing chapter
         """
@@ -82,7 +72,7 @@ class ChapterService:
             self.db.refresh(chapter)
         return chapter
     
-    def delete_chapter(self, chapter_id: str) -> bool:
+    def delete_chapter(self, chapter_id: int) -> bool:  # Changed to int
         """
         Delete a chapter by its ID
         """
@@ -101,7 +91,7 @@ class ChapterService:
             return True
         return False
     
-    def get_full_chapter_content(self, chapter_id: str) -> Optional[Chapter]:
+    def get_full_chapter_content(self, chapter_id: int) -> Optional[Chapter]:  # Changed to int
         """
         Get a chapter with its full content
         """

@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from datetime import timedelta
-from database import get_db
+from ..database import get_db
 from sqlalchemy.orm import Session
-from auth.auth_service import (
+from ..auth.auth_service import (
     UserLogin,
     Token,
     get_user,
@@ -14,7 +14,7 @@ from auth.auth_service import (
 )
 
 # Import the signup router
-from auth.signup import router as signup_router
+from ..auth.signup import router as signup_router
 
 # Main auth router that includes all auth-related endpoints
 auth_router = APIRouter()
@@ -24,9 +24,9 @@ auth_router.include_router(signup_router)
 
 # Add login endpoint
 @auth_router.post("/login", response_model=Token)
-async def login(user_data: UserLogin):
+async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """Authenticate user and return access token"""
-    user = authenticate_user(user_data.email, user_data.password)
+    user = authenticate_user(db, user_data.email, user_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -44,12 +44,12 @@ async def login(user_data: UserLogin):
 security = HTTPBearer()
 
 @auth_router.get("/me")
-async def read_users_me(token: HTTPAuthorizationCredentials = Depends(security)):
+async def read_users_me(credentials: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)):
     """Get current user info based on token"""
     from auth.auth_service import get_current_user
-    user = await get_current_user(token)
+    user = await get_current_user(credentials)
     # Return user data without sensitive info like password
-    user_data = user.dict()
+    user_data = user.__dict__.copy()
     if 'hashed_password' in user_data:
         del user_data['hashed_password']
     return {"user": user_data}

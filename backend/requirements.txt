@@ -9,7 +9,7 @@ passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
 better-exceptions==0.3.2
 cohere==4.27
-qdrant-client==1.7.0
+qdrant-client>=1.7.0
 python-dotenv==1.0.0
 aiofiles==23.2.1
 httpx==0.25.2

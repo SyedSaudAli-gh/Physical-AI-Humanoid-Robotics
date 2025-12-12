@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import Dict, Any
 from pydantic import BaseModel
-from database import get_db
-from services.personalization_service import PersonalizationService
+from ..database import get_db
+from ..services.personalization_service import PersonalizationService
 
 
 router = APIRouter(prefix="/personalize", tags=["personalization"])

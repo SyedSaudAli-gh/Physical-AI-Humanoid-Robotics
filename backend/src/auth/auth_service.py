@@ -1,7 +1,11 @@
+# backend/src/auth/auth_service.py
 # Better-Auth configuration for user authentication and profile management
 from typing import Optional
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+from ..database import get_db
+from ..models.user_profile import UserProfile
 import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -49,9 +53,6 @@ class Token(BaseModel):
 class TokenData(BaseModel):
     email: str
 
-# Mock database for users (in a real implementation, this would be a DB)
-fake_users_db = {}
-
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed password"""
     return pwd_context.verify(plain_password, hashed_password)
@@ -60,16 +61,16 @@ def get_password_hash(password: str) -> str:
     """Hash a password"""
     return pwd_context.hash(password)
 
-def get_user(email: str) -> Optional[User]:
+def get_user(db: Session, email: str) -> Optional[UserProfile]:
     """Get a user from the database by email"""
-    user_data = fake_users_db.get(email)
-    if user_data:
-        return User(**user_data)
+    user = db.query(UserProfile).filter(UserProfile.email == email).first()
+    if user:
+        return user
     return None
 
-def authenticate_user(email: str, password: str) -> Optional[User]:
+def authenticate_user(db: Session, email: str, password: str) -> Optional[UserProfile]:
     """Authenticate a user with email and password"""
-    user = get_user(email)
+    user = get_user(db, email)
     if not user or not verify_password(password, user.hashed_password):
         return None
     return user
@@ -85,48 +86,61 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-async def get_current_user(token: str = Depends(HTTPBearer())):
+from fastapi import Depends
+from sqlalchemy.orm import Session
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer()),
+    db: Session = Depends(get_db)  # Fixed: Add this dependency
+):
     """Get the current user from the token"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
+    token = credentials.credentials
+
     try:
-        payload = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
         token_data = TokenData(email=email)
     except jwt.PyJWTError:
         raise credentials_exception
-    user = get_user(email=token_data.email)
+
+    user = get_user(db, email=token_data.email)  # Now using the db from Depends
     if user is None:
         raise credentials_exception
     return user
 
-def register_user(user_data: UserRegistration) -> User:
+def register_user(db: Session, user_data: UserRegistration) -> UserProfile:
     """Register a new user in the system"""
-    if user_data.email in fake_users_db:
+    # Check if user already exists
+    existing_user = db.query(UserProfile).filter(UserProfile.email == user_data.email).first()
+    if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    user_id = str(uuid.uuid4())
+
+    # Hash the password
     hashed_password = get_password_hash(user_data.password)
-    
-    user = User(
-        id=user_id,
+
+    # Create user profile in database
+    user = UserProfile(
         email=user_data.email,
         name=user_data.name,
-        technical_skills=user_data.technical_skills,
+        technical_skills=user_data.technical_skills or [],
         experience_level=user_data.experience_level,
-        background_questionnaire=user_data.background_questionnaire,
-        preferences={}
+        background_questionnaire=user_data.background_questionnaire or {},
+        hashed_password=hashed_password  # Store the hashed password in the UserProfile
     )
-    
-    # Store in mock database (in real app, save to actual DB)
-    fake_users_db[user.email] = user.dict()
-    fake_users_db[user.email]["hashed_password"] = hashed_password
-    
+
+    # Add to database
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
     return user
 
 # In a real implementation, this would be integrated into your FastAPI app

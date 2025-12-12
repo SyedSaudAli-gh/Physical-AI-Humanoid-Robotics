@@ -1,7 +1,13 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api import modules, chapters, auth, users, translation, personalization
-from database import create_tables
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+from .api import modules, chapters, auth, users, translation, personalization, chat
+from .database import create_tables
 from contextlib import asynccontextmanager
 
 @asynccontextmanager
@@ -20,10 +26,12 @@ app = FastAPI(
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=["*"],  # Allow all origins during development; restrict in production
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"],  # Allow all headers initially
+    # Expose headers for frontend access
+    expose_headers=["Access-Control-Allow-Origin", "Authorization", "X-Total-Count"]
 )
 
 # Include API routers
