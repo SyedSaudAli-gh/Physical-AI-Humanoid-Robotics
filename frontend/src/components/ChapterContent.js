@@ -3,6 +3,7 @@ import { fetchChapterContent } from '../services/api';
 import RAGChatbot from './RAGChatbot';
 import ChapterControls from './ChapterControls';
 import { useUser } from '../contexts/UserContext';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import styles from './UrduTranslation.module.css';
 
 // Component for displaying chapter content with RAG chatbot and translation capabilities
@@ -16,6 +17,10 @@ const ChapterContent = ({ chapterId }) => {
 
   // Check if content is currently in Urdu based on URL or user preference
   const isUrduContent = () => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      return preferences?.preferred_language === 'ur';
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('lang') === 'ur' || preferences?.preferred_language === 'ur';
   };
@@ -41,6 +46,10 @@ const ChapterContent = ({ chapterId }) => {
 
   // Set up text selection handler
   useEffect(() => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      return;
+    }
+
     const handleSelection = () => {
       const selectedTextObj = window.getSelection();
       const selectedText = selectedTextObj.toString().trim();

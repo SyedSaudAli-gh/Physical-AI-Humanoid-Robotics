@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 // Create context
 const AuthContext = createContext(undefined);
@@ -25,6 +26,12 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing session on mount
   useEffect(() => {
+    // Only run in browser environment
+    if (!ExecutionEnvironment.canUseDOM) {
+      setLoading(false);
+      return;
+    }
+
     const checkSession = async () => {
       try {
         // Try to get user info to verify session
@@ -61,6 +68,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      throw new Error('Login is only available in browser environment');
+    }
+
     try {
       // Call the backend login endpoint
       const response = await axios.post(`${API_BASE_URL}/auth/login`, {
@@ -103,6 +114,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signup = async (userData) => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      throw new Error('Signup is only available in browser environment');
+    }
+
     try {
       // Call the backend signup endpoint
       const response = await axios.post(`${API_BASE_URL}/auth/signup`, userData);
@@ -138,15 +153,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // Clear stored authentication data
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
+    if (ExecutionEnvironment.canUseDOM) {
+      // Clear stored authentication data only in browser
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+    }
     setUser(null);
   };
 
   // Function to update user profile
   const updateUserProfile = (updatedData) => {
-    if (user) {
+    if (user && ExecutionEnvironment.canUseDOM) {
       const updatedUser = { ...user, ...updatedData };
       setUser(updatedUser);
       localStorage.setItem('user', JSON.stringify(updatedUser));

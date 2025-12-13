@@ -11,6 +11,11 @@ const LoginForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!window) {
+      setError('Login is only available in the browser');
+      return;
+    }
+
     setLoading(true);
     setError('');
 

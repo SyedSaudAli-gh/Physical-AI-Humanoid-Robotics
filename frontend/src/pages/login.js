@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useHistory, Redirect } from '@docusaurus/router';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -19,7 +20,10 @@ const LoginPage = () => {
     try {
       await login(email, password);
       // On successful login, redirect to previous location or home
-      const returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '/';
+      let returnUrl = '/';
+      if (ExecutionEnvironment.canUseDOM) {
+        returnUrl = new URLSearchParams(window.location.search).get('returnUrl') || '/';
+      }
       history.push(returnUrl);
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials and try again.');

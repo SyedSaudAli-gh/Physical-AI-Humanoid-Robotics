@@ -1,9 +1,14 @@
 import React from 'react';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 import { createRoot } from 'react-dom/client';
 import AuthNavbarItem from '../components/AuthNavbarItem';
 
 // Function to render the AuthNavbarItem in the placeholder
 function renderAuthNavbar() {
+  if (!ExecutionEnvironment.canUseDOM) {
+    return;
+  }
+
   const placeholder = document.getElementById('auth-navbar-placeholder');
   if (placeholder) {
     // Create a container div to render the component
@@ -17,16 +22,18 @@ function renderAuthNavbar() {
 }
 
 // Wait for the DOM to be ready before rendering
-if (document.readyState === 'loading') {
+if (ExecutionEnvironment.canUseDOM && document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', renderAuthNavbar);
-} else {
+} else if (ExecutionEnvironment.canUseDOM) {
   renderAuthNavbar();
 }
 
 // For SPA navigation support
-window.addEventListener('load', () => {
-  // Re-render when the page content changes
-  if (window.docusaurus) {
-    window.docusaurus.eventEmitter?.on('routeDidUpdate', renderAuthNavbar);
-  }
-});
+if (ExecutionEnvironment.canUseDOM) {
+  window.addEventListener('load', () => {
+    // Re-render when the page content changes
+    if (window.docusaurus) {
+      window.docusaurus.eventEmitter?.on('routeDidUpdate', renderAuthNavbar);
+    }
+  });
+}

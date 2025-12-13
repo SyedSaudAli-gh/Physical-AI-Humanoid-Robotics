@@ -1,5 +1,6 @@
 // contexts/UserContext.js
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 // Create the context
 const UserContext = createContext();
@@ -64,18 +65,23 @@ export const UserProvider = ({ children }) => {
 
   // Load user and preferences from localStorage or API on initial load
   useEffect(() => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      dispatch({ type: 'SET_LOADING', payload: false });
+      return;
+    }
+
     const loadUserData = async () => {
       try {
         dispatch({ type: 'SET_LOADING', payload: true });
-        
+
         // Simulate loading user data (in a real app, this would be an API call)
         const storedUser = localStorage.getItem('user');
         const storedPreferences = localStorage.getItem('preferences');
-        
+
         if (storedUser) {
           dispatch({ type: 'SET_USER', payload: JSON.parse(storedUser) });
         }
-        
+
         if (storedPreferences) {
           dispatch({ type: 'SET_PREFERENCES', payload: JSON.parse(storedPreferences) });
         } else {
@@ -99,6 +105,10 @@ export const UserProvider = ({ children }) => {
 
   // Actions
   const login = async (userData) => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      throw new Error('Login is only available in browser environment');
+    }
+
     try {
       dispatch({ type: 'SET_USER', payload: userData });
       localStorage.setItem('user', JSON.stringify(userData));
@@ -108,11 +118,13 @@ export const UserProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    try {
-      dispatch({ type: 'LOGOUT' });
+    if (ExecutionEnvironment.canUseDOM) {
       localStorage.removeItem('user');
       localStorage.removeItem('preferences');
-      
+    }
+    try {
+      dispatch({ type: 'LOGOUT' });
+
       // Optionally redirect to home page or login page
     } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
@@ -120,6 +132,10 @@ export const UserProvider = ({ children }) => {
   };
 
   const updatePreferences = async (preferencesData) => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      throw new Error('Updating preferences is only available in browser environment');
+    }
+
     try {
       dispatch({ type: 'UPDATE_PREFERENCES', payload: preferencesData });
       localStorage.setItem('preferences', JSON.stringify({ ...state.preferences, ...preferencesData }));

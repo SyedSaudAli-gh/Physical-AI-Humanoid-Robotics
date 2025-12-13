@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 // Language switcher component for the UI
 const LanguageSwitcher = ({ onLanguageChange }) => {
@@ -14,16 +15,22 @@ const LanguageSwitcher = ({ onLanguageChange }) => {
   }, [preferences]);
 
   const handleLanguageChange = async (langCode) => {
+    if (!ExecutionEnvironment.canUseDOM) {
+      // Handle the case when DOM is not available (server-side rendering)
+      setSelectedLanguage(langCode);
+      return;
+    }
+
     setSelectedLanguage(langCode);
-    
+
     // Update user preferences
     await updatePreferences({ preferred_language: langCode });
-    
+
     // Notify parent component of language change
     if (onLanguageChange) {
       onLanguageChange(langCode);
     }
-    
+
     // In a real implementation, you might reload content with new language
     // window.location.reload(); // Only if needed based on your architecture
   };

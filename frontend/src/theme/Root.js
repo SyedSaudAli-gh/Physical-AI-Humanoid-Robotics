@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { UserProvider } from '../contexts/UserContext';
 import { AuthProvider } from '../contexts/AuthContext';
 import RAGChatbot from '../components/RAGChatbot';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 // Default implementation, that you can customize
 function Root({ children }) {
@@ -10,6 +11,11 @@ function Root({ children }) {
 
   // Function to handle text selection
   useEffect(() => {
+    // Only run on browser (not during SSR)
+    if (!ExecutionEnvironment.canUseDOM) {
+      return;
+    }
+
     const handleTextSelection = () => {
       const selection = window.getSelection();
       if (selection.toString().trim() !== '') {

@@ -2,6 +2,7 @@ import React from 'react';
 import OriginalNavbar from '@theme-original/Navbar';
 import { useAuth } from '../contexts/AuthContext';
 import { useHistory } from '@docusaurus/router';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const NavbarWrapper = (props) => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -11,8 +12,10 @@ const NavbarWrapper = (props) => {
     await logout();
     // Redirect to home after logout
     history.push('/');
-    // Refresh the page to update the UI
-    window.location.reload();
+    // Refresh the page to update the UI only in browser environment
+    if (ExecutionEnvironment.canUseDOM) {
+      window.location.reload();
+    }
   };
 
   // Return the original navbar as-is, since the configuration in docusaurus.config.js

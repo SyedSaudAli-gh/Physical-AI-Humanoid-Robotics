@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
+import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const ChapterControls = ({ chapterId, onContentUpdate }) => {
   const [isPersonalizing, setIsPersonalizing] = useState(false);
@@ -15,6 +16,11 @@ const ChapterControls = ({ chapterId, onContentUpdate }) => {
   const handlePersonalize = async () => {
     if (!isAuthenticated || !userId) {
       alert('Please log in to use personalization features');
+      return;
+    }
+
+    if (!ExecutionEnvironment.canUseDOM) {
+      alert('Personalization is only available in the browser');
       return;
     }
 
@@ -52,6 +58,11 @@ const ChapterControls = ({ chapterId, onContentUpdate }) => {
   const handleTranslateToUrdu = async () => {
     if (!isAuthenticated) {
       alert('Please log in to use translation features');
+      return;
+    }
+
+    if (!ExecutionEnvironment.canUseDOM) {
+      alert('Translation is only available in the browser');
       return;
     }
 
