@@ -1,0 +1,182 @@
+/**
+ * CSS Module for BookLayout component
+ * Implements book-style reading layout with proper typography and spacing
+ */
+
+.bookLayout {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  line-height: 1.6;
+  color: #333;
+  background-color: #faf8f5; /* Warm off-white for book-like feel */
+  min-height: 100vh;
+  position: relative;
+}
+
+.bookLayout::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 3em 3em;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.bookHeader {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0d6bd;
+}
+
+.bookTitleSection {
+  text-align: center;
+}
+
+.bookTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+  color: #2c3e50;
+  line-height: 1.2;
+}
+
+.bookAuthors {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin-top: 0.5rem;
+}
+
+.author {
+  font-style: italic;
+}
+
+.bookContent {
+  margin: 0 auto;
+}
+
+.bookNavigation {
+  margin-bottom: 2rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e0d6bd;
+}
+
+.sectionInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sectionLabel {
+  font-weight: bold;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.sectionValue {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.chapterContent {
+  margin: 0 auto;
+  padding: 1rem 0;
+}
+
+.chapterContent h2 {
+  font-size: 1.8rem;
+  margin: 2.5rem 0 1.5rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0d6bd;
+  color: #2c3e50;
+}
+
+.chapterContent h3 {
+  font-size: 1.4rem;
+  margin: 2rem 0 1rem 0;
+  color: #34495e;
+}
+
+.chapterContent p {
+  margin-bottom: 1.2rem;
+  text-align: justify;
+}
+
+.chapterContent blockquote {
+  margin: 1.5rem 0;
+  padding: 1rem 1.5rem;
+  border-left: 4px solid #3498db;
+  background-color: #f8f9fa;
+  font-style: italic;
+  color: #555;
+}
+
+.chapterContent code {
+  background-color: #f1f1f1;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+}
+
+.chapterContent pre {
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  padding: 1rem;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.bookFooter {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0d6bd;
+  text-align: center;
+  color: #7f8c8d;
+  font-size: 0.9rem;
+}
+
+.pageNumber {
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bookLayout {
+    padding: 1.5rem 1rem;
+    font-size: 0.95rem;
+  }
+  
+  .bookTitle {
+    font-size: 2rem;
+  }
+  
+  .chapterContent h2 {
+    font-size: 1.5rem;
+  }
+  
+  .chapterContent h3 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bookLayout {
+    padding: 1rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .bookTitle {
+    font-size: 1.7rem;
+  }
+}

@@ -332,7 +332,6 @@ const UserProfile = () => {
                           className="form-control"
                         >
                           <option value="en">English</option>
-                          <option value="ur">Urdu</option>
                         </select>
                       </div>
                       

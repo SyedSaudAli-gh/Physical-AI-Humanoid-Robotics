@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserProvider } from '../contexts/UserContext';
 import { AuthProvider } from '../contexts/AuthContext';
-import RAGChatbot from '../components/RAGChatbot';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 // Default implementation, that you can customize
@@ -41,10 +40,7 @@ function Root({ children }) {
   return (
     <AuthProvider>
       <UserProvider>
-        <>
-          {children}
-          <RAGChatbot selectedText={selectedText} />
-        </>
+        {children}
       </UserProvider>
     </AuthProvider>
   );

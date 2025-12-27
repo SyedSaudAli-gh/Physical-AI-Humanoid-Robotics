@@ -75,39 +75,22 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Add custom fonts for Urdu support
-      fonts: {
-        fontStack: `"Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", serif`,
+      docs: {
+        sidebar: {
+          hideable: true,
+        },
       },
-
-      // Add Google Fonts for Urdu support in head
-      headTags: [
-        {
-          tagName: 'link',
-          attributes: {
-            rel: 'preconnect',
-            href: 'https://fonts.googleapis.com',
-          },
-        },
-        {
-          tagName: 'link',
-          attributes: {
-            rel: 'preconnect',
-            href: 'https://fonts.gstatic.com',
-            crossOrigin: 'anonymous',
-          },
-        },
-        {
-          tagName: 'link',
-          attributes: {
-            rel: 'stylesheet',
-            href: 'https://fonts.googleapis.com/css2?family=Noto+Nastaliq+Urdu&display=swap',
-          },
-        },
-      ],
-
-      // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      colorMode: {
+        defaultMode: 'light',
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
+      },
+      // Disable the back-to-top button to fix SSR error
+      announcementBar: {
+        id: 'announcementBar-1', // ID of the announcement bar
+        content: 'Welcome to the Physical AI & Humanoid Robotics Textbook!',
+        isCloseable: true,
+      },
       navbar: {
         title: 'Physical AI & Humanoid Robotics',
         logo: {
@@ -162,6 +145,18 @@ const config = {
                 label: 'Twitter',
                 href: 'https://twitter.com/docusaurus',
               },
+              {
+                label: 'LinkedIn',
+                href: 'https://www.linkedin.com/in/syed-saud-ali-6399712b4/',
+              },
+              {
+                label: 'Facebook',
+                href: 'https://www.facebook.com/saud.saleem.391',
+              },
+              {
+                label: 'X (Twitter)',
+                href: 'https://x.com/saudali242821',
+              },
             ],
           },
           {
@@ -169,7 +164,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/syedsaudali-gh/Physical-AI-Humanoid-Robotics',
               },
             ],
           },
@@ -191,38 +186,26 @@ const config = {
   ],
 
   // Client modules for custom functionality
-  clientModules: [
-    require.resolve('./src/clientModules/authNavbar.js'),
-  ],
+  clientModules: [],
 
   plugins: [
+    // Google Analytics for performance monitoring
+    [
+      '@docusaurus/plugin-google-gtag',
+      {
+        trackingID: 'G-XXXXXXXXXX', // Replace with actual tracking ID in production
+        anonymizeIP: true,
+      },
+    ],
   ],
 
-  // Proxy configuration for development
-  webpack: {
-    jsLoader: (isServer) => ({
-      loader: require.resolve('swc-loader'),
-      options: {
-        jsc: {
-          parser: {
-            syntax: 'typescript',
-            tsx: true,
-          },
-          target: 'es2017',
-        },
-        module: {
-          type: isServer ? 'commonjs' : 'es6',
-        },
-      },
-    }),
-  },
 
   // Place non-standard custom fields in customFields
   customFields: {
     devServer: {
       proxy: {
         '/api': {
-          target: 'http://localhost:8000', // Backend server address
+          target: 'http://localhost:8000/', // Backend server address
           changeOrigin: true,
           secure: false, // Set to true if backend uses HTTPS
           logLevel: 'debug',

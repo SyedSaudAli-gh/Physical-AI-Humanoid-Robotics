@@ -31,11 +31,14 @@
 4. **Set up environment variables:**
    Create `.env` file in backend directory:
    ```env
-   DATABASE_URL="your_neon_postgres_connection_string"
-   QDRANT_URL="your_qdrant_cloud_url"
-   COHERE_API_KEY="your_cohere_api_key"
-   OPENAI_API_KEY="your_openai_api_key"
-   BETTER_AUTH_SECRET="your_auth_secret"
+   # Backend Environment Variables
+   OPENAI_API_KEY=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
+   COHERE_API_KEY=HTFZezITzJtoLBloDX0rP4Eb6NKsrk9BTxNkNW7l
+   QDRANT_URL=https://c96efe7c-aa83-47e9-a297-2961f5942f0c.us-east4-0.gcp.cloud.qdrant.io
+   QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.3CuOHUNlKyj01GPjTuQavvfNsYy0n2gjdS3IWfcM7q0
+   DATABASE_URL=https://ep-wild-bird-adcyfk2v.apirest.c-2.us-east-1.aws.neon.tech/neondb/rest/v1
+   BETTER_AUTH_SECRET=MTPMFZy6ovucemA62babULjzW07s6DV9
+   GEMINI_API_KEY=AIzaSyCURhNq2jgupaiJs1yS_oatEMTy9LaJcbY
    BETTER_AUTH_URL="http://localhost:3000"  # or your deployed URL
    ```
 

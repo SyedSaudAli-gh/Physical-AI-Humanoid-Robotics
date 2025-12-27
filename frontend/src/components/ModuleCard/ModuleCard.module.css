@@ -1,0 +1,94 @@
+/**
+ * CSS Module for ModuleCard component
+ */
+
+.moduleCard {
+  background-color: var(--neutral-white);
+  border: 1px solid var(--secondary-200);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-md);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.moduleCard:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.cardIcon {
+  font-size: 1.5rem;
+  margin-right: var(--spacing-sm);
+  color: var(--primary-500);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  color: var(--secondary-800);
+}
+
+.cardBody {
+  flex-grow: 1;
+  margin-bottom: var(--spacing-lg);
+}
+
+.cardDescription {
+  color: var(--secondary-600);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+
+.cardFooter {
+  margin-top: auto;
+}
+
+.cardLink {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary-600);
+  text-decoration: none;
+  font-weight: var(--font-weight-semibold);
+  transition: color 0.2s ease;
+}
+
+.cardLink:hover {
+  color: var(--primary-700);
+  text-decoration: underline;
+}
+
+.arrow {
+  margin-left: var(--spacing-xs);
+  transition: transform 0.2s ease;
+}
+
+.cardLink:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .moduleCard {
+    margin: var(--spacing-sm);
+    padding: var(--spacing-md);
+  }
+  
+  .cardTitle {
+    font-size: var(--font-size-md);
+  }
+  
+  .cardDescription {
+    font-size: var(--font-size-sm);
+  }
+}

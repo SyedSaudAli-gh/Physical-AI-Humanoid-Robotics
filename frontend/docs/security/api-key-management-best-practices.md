@@ -34,6 +34,38 @@ export OPENAI_API_KEY="sk-actual-key-here"
 public static final String API_KEY = "sk-actual-key-here";
 ```
 
+### ✅ Instead, Use Environment Variables:
+```python
+# Python example using python-dotenv
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
+
+# Access the API key
+openai_api_key = os.getenv("OPENAI_API_KEY")
+```
+
+```javascript
+// JavaScript/Node.js example
+// Access the API key from environment variables
+const openaiApiKey = process.env.OPENAI_API_KEY;
+
+// For frontend applications, pass variables through build process
+// DO NOT directly access backend API keys from frontend code
+```
+
+```bash
+# Store in .env file (and add to .gitignore)
+OPENAI_API_KEY=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
+COHERE_API_KEY=HTFZezITzJtoLBloDX0rP4Eb6NKsrk9BTxNkNW7l
+QDRANT_URL=https://c96efe7c-aa83-47e9-a297-2961f5942f0c.us-east4-0.gcp.cloud.qdrant.io
+QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.3CuOHUNlKyj01GPjTuQavvfNsYy0n2gjdS3IWfcM7q0
+DATABASE_URL=https://ep-wild-bird-adcyfk2v.apirest.c-2.us-east-1.aws.neon.tech/neondb/rest/v1
+BETTER_AUTH_SECRET=MTPMFZy6ovucemA62babULjzW07s6DV9
+GEMINI_API_KEY=AIzaSyCURhNq2jgupaiJs1yS_oatEMTy9LaJcbY
+```
+
 ### ✅ Proper Storage Methods:
 - Use environment variables for runtime configuration
 - Store in dedicated secrets management systems (HashiCorp Vault, AWS Secrets Manager, Azure Key Vault)

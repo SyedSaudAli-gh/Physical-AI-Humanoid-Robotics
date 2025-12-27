@@ -1,0 +1,133 @@
+/**
+ * ModuleCard component styles
+ * Implements a modern, responsive card design for module display
+ */
+
+.module-card {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  border-color: var(--ifm-color-primary);
+}
+
+.module-card-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.module-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background-color: var(--ifm-color-primary-lightest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.module-icon .icon {
+  font-size: 2rem;
+  color: var(--ifm-color-primary);
+}
+
+.module-icon .default-module-icon::before {
+  content: "📚";
+}
+
+.module-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: var(--ifm-heading-color);
+  line-height: 1.4;
+}
+
+.module-description {
+  font-size: 0.95rem;
+  color: var(--ifm-color-emphasis-700);
+  margin: 0 0 1rem 0;
+  flex-grow: 1;
+  line-height: 1.5;
+}
+
+.module-meta {
+  margin-bottom: 1rem;
+}
+
+.chapter-count {
+  display: inline-block;
+  background-color: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-800);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.module-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  margin-top: auto;
+  transition: color 0.2s;
+}
+
+.module-link:hover {
+  color: var(--ifm-color-primary-dark);
+}
+
+.module-link .arrow {
+  transition: transform 0.2s;
+}
+
+.module-link:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* Responsive design for different screen sizes */
+@media (max-width: 768px) {
+  .module-card {
+    margin-bottom: 1.5rem;
+  }
+  
+  .module-title {
+    font-size: 1.1rem;
+  }
+  
+  .module-description {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .module-card-content {
+    padding: 1rem;
+  }
+  
+  .module-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.75rem;
+  }
+  
+  .module-title {
+    font-size: 1rem;
+  }
+}

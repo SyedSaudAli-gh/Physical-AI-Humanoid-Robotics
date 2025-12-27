@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchChapterContent } from '../services/api';
-import RAGChatbot from './RAGChatbot';
 import ChapterControls from './ChapterControls';
 import { useUser } from '../contexts/UserContext';
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
-import styles from './UrduTranslation.module.css';
 
-// Component for displaying chapter content with RAG chatbot and translation capabilities
+// Component for displaying chapter content with new chat widget
 const ChapterContent = ({ chapterId }) => {
   const [chapter, setChapter] = useState(null);
   const [currentContent, setCurrentContent] = useState('');
@@ -15,20 +13,10 @@ const ChapterContent = ({ chapterId }) => {
   const [selectedText, setSelectedText] = useState('');
   const { preferences } = useUser();
 
-  // Check if content is currently in Urdu based on URL or user preference
-  const isUrduContent = () => {
-    if (!ExecutionEnvironment.canUseDOM) {
-      return preferences?.preferred_language === 'ur';
-    }
-
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('lang') === 'ur' || preferences?.preferred_language === 'ur';
-  };
-
   const loadChapter = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchChapterContent(chapterId, null, isUrduContent() ? 'ur' : null);
+      const data = await fetchChapterContent(chapterId);
       setChapter(data);
       setCurrentContent(data.content);
     } catch (err) {
@@ -36,7 +24,7 @@ const ChapterContent = ({ chapterId }) => {
     } finally {
       setLoading(false);
     }
-  }, [chapterId, preferences?.preferred_language]);
+  }, [chapterId]);
 
   useEffect(() => {
     if (chapterId) {
@@ -67,11 +55,6 @@ const ChapterContent = ({ chapterId }) => {
       document.removeEventListener('mouseup', handleSelection);
     };
   }, []);
-
-  // This function is no longer needed since we're using modal approach
-  // const handleContentChange = (newContent) => {
-  //   setCurrentContent(newContent);
-  // };
 
   const handleDifficultyChange = (difficulty) => {
     // When difficulty changes, potentially reload content with new difficulty
@@ -123,9 +106,6 @@ const ChapterContent = ({ chapterId }) => {
     );
   }
 
-  // Determine content direction based on language
-  const contentDirection = isUrduContent() ? 'rtl' : 'ltr';
-
   return (
     <div className="container margin-vert--lg">
       <div className="row">
@@ -139,16 +119,13 @@ const ChapterContent = ({ chapterId }) => {
             {/* Chapter Controls */}
             <ChapterControls
               chapterId={chapterId}
-              currentContent={currentContent}
-              onDifficultyChange={handleDifficultyChange}
+              onContentUpdate={setCurrentContent}
             />
 
             <div
               className="chapter-content"
               style={{
                 lineHeight: '1.6',
-                direction: contentDirection,
-                fontFamily: isUrduContent() ? '"Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", serif' : 'inherit'
               }}
             >
               {/* Render chapter content - in a real implementation, you'd properly render markdown */}
@@ -170,7 +147,7 @@ const ChapterContent = ({ chapterId }) => {
           </article>
         </div>
 
-        {/* Chatbot Panel */}
+        {/* Chatbot Panel - Now handled by the floating ChatWidget in Root.js */}
         <div className="col col--4">
           <div className="card">
             <div className="card__header">
@@ -184,11 +161,9 @@ const ChapterContent = ({ chapterId }) => {
               )}
             </div>
             <div className="card__body">
-              <RAGChatbot
-                chapterId={chapterId}
-                selectedText={selectedText}
-                language={isUrduContent() ? 'ur' : 'en'}
-              />
+              <p className="text--center text--secondary">
+                The interactive assistant is available as a floating button on the page.
+              </p>
             </div>
           </div>
         </div>

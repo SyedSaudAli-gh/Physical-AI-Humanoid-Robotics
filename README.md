@@ -36,30 +36,33 @@ This project implements a comprehensive textbook for Physical AI & Humanoid Robo
 
 ### Backend Setup
 
-1. Navigate to the backend directory:
+1. Navigate to the rag-backend directory:
 ```bash
-cd backend
+cd rag-backend
 ```
 
-2. Install dependencies:
+2. Install dependencies using uv (as specified in the project):
 ```bash
-pip install -r requirements.txt
+uv pip install -e .
 ```
 
 3. Set up environment variables in `.env`:
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/textbook_db"
-QDRANT_URL="https://your-cluster-url.qdrant.tech:6333"
-COHERE_API_KEY="your-cohere-api-key"
-OPENAI_API_KEY="your-openai-api-key"
-BETTER_AUTH_SECRET="your-auth-secret"
+# Backend Environment Variables
+OPENAI_API_KEY=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
+COHERE_API_KEY=HTFZezITzJtoLBloDX0rP4Eb6NKsrk9BTxNkNW7l
+QDRANT_URL=https://c96efe7c-aa83-47e9-a297-2961f5942f0c.us-east4-0.gcp.cloud.qdrant.io
+QDRANT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOiJtIn0.3CuOHUNlKyj01GPjTuQavvfNsYy0n2gjdS3IWfcM7q0
+DATABASE_URL=https://ep-wild-bird-adcyfk2v.apirest.c-2.us-east-1.aws.neon.tech/neondb/rest/v1
+BETTER_AUTH_SECRET=MTPMFZy6ovucemA62babULjzW07s6DV9
+GEMINI_API_KEY=AIzaSyCURhNq2jgupaiJs1yS_oatEMTy9LaJcbY
 BETTER_AUTH_URL="http://localhost:3000"
 ```
 
-4. Start the backend server:
+4. Start the rag-backend server:
 ```bash
-cd src
-uvicorn main:app --reload
+cd rag-backend
+uv run main.py
 ```
 
 ### Frontend Setup
@@ -84,8 +87,9 @@ npm start
 To upload chapters to the vector database:
 
 ```bash
-cd backend/src
-python upload_chapters.py --docs-dir ../frontend/docs --load-docs
+# The upload script functionality is now part of the rag-backend pipeline
+cd rag-backend
+python -c "from main import run_ingestion_pipeline; run_ingestion_pipeline()"
 ```
 
 ## Testing the Implementation
@@ -93,23 +97,24 @@ python upload_chapters.py --docs-dir ../frontend/docs --load-docs
 Run the comprehensive test to validate all features:
 
 ```bash
-cd backend/src
-python test_features.py
+cd rag-backend
+# Run the specific tests for rag-backend functionality
+python -m pytest tests/
 ```
 
 ## Project Structure
 
 ```
 Physical-AI-Humanoid-Robotics/
-├── backend/
-│   ├── src/
-│   │   ├── api/          # API endpoints
-│   │   ├── auth/         # Authentication logic
-│   │   ├── models/       # Database models
-│   │   ├── services/     # Business logic
-│   │   ├── rag/          # RAG system components
-│   │   └── main.py       # Main application entry point
-│   └── requirements.txt
+├── rag-backend/
+│   ├── agent.py          # AI agent implementation using OpenAI Agents SDK
+│   ├── main.py           # FastAPI application entry point
+│   ├── models.py         # Pydantic models for request/response validation
+│   ├── tools.py          # Tools for the agent (retrieval service integration)
+│   ├── config.py         # Configuration settings
+│   ├── retrieval_service.py # RAG retrieval functionality
+│   ├── pyproject.toml    # Project dependencies and configuration
+│   └── tests/            # Backend tests
 ├── frontend/
 │   ├── docs/             # Textbook content
 │   ├── src/
@@ -151,6 +156,28 @@ python -m code_assistant --task "create a ROS navigation node"
 ## Environment Configuration
 
 Make sure to properly set up your `.env` file with all the required API keys and database URLs. The application includes graceful degradation when external services are unavailable.
+
+### How Environment Variables Are Used
+
+**Backend (Python/FastAPI):**
+- The backend uses `python-dotenv` library to load environment variables from the `.env` file
+- Configuration is handled through the `Settings` class in `backend/src/config.py`
+- API keys are accessed via `os.getenv()` and integrated into services like OpenAI, Cohere, and Qdrant
+- The main application entry point (`backend/src/main.py`) calls `load_dotenv()` to ensure environment variables are loaded
+
+**Frontend (Docusaurus/React):**
+- For Docusaurus applications, environment variables are processed at build time
+- The frontend is configured to proxy API requests to the backend via the development server
+- All external API calls (OpenAI, Cohere, etc.) should be made through backend endpoints for security
+- Configuration is handled in `frontend/src/services/config.js`
+
+### Security Best Practices
+
+- Keep your `.env` file in `.gitignore` to prevent committing sensitive information
+- Never expose API keys directly in frontend code
+- All external API calls should be proxied through the backend
+- Use different API keys for development and production environments
+- Regularly rotate API keys and review usage limits
 
 ## Deployment
 

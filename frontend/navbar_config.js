@@ -6,7 +6,7 @@
  * 
  * To use this configuration:
  * 1. Add this to your docusaurus.config.js file in the themeConfig.navbar property
- * 2. Ensure i18n is set up with 'en' and 'ur' locales in your docusaurus.config.js
+ * 2. Ensure i18n is set up with 'en' locale in your docusaurus.config.js
  * 3. Create /login and /signup pages in your src/pages directory
  */
 const navbarConfig = {
@@ -58,17 +58,7 @@ const navbarConfig = {
 1. Make sure to add i18n configuration to docusaurus.config.js:
 i18n: {
   defaultLocale: 'en',
-  locales: ['en', 'ur'],
-  localeConfigs: {
-    ur: {
-      label: 'اردو',
-      direction: 'rtl', // Right to left for Urdu
-    },
-    en: {
-      label: 'English',
-      direction: 'ltr',
-    }
-  },
+  locales: ['en'],
 },
 
 2. Create login and signup pages in src/pages/ directory:

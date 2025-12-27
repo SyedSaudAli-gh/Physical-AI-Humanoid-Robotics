@@ -5,9 +5,6 @@ import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const ChapterControls = ({ chapterId, onContentUpdate }) => {
   const [isPersonalizing, setIsPersonalizing] = useState(false);
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [showUrduModal, setShowUrduModal] = useState(false);
-  const [urduContent, setUrduContent] = useState('');
   const { user, isAuthenticated } = useAuth();
 
   // Get the user ID from the auth context
@@ -55,48 +52,6 @@ const ChapterControls = ({ chapterId, onContentUpdate }) => {
     }
   };
 
-  const handleTranslateToUrdu = async () => {
-    if (!isAuthenticated) {
-      alert('Please log in to use translation features');
-      return;
-    }
-
-    if (!ExecutionEnvironment.canUseDOM) {
-      alert('Translation is only available in the browser');
-      return;
-    }
-
-    setIsTranslating(true);
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await axios.post(
-        '/api/translate/chapter-urdu',
-        {
-          chapter_id: chapterId
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      setUrduContent(response.data.urdu_content);
-      setShowUrduModal(true);
-    } catch (error) {
-      console.error('Translation error:', error);
-      alert('Error translating content. Please try again. Details: ' + (error.response?.data?.detail || error.message));
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
-  const closeModal = () => {
-    setShowUrduModal(false);
-    setUrduContent('');
-  };
-
   return (
     <div className="chapter-controls margin-bottom--lg">
       {isAuthenticated && (
@@ -116,42 +71,6 @@ const ChapterControls = ({ chapterId, onContentUpdate }) => {
               'Personalize Content'
             )}
           </button>
-
-          <button
-            className="button button--success"
-            onClick={handleTranslateToUrdu}
-            disabled={isTranslating}
-            title="Translate content to Urdu"
-          >
-            {isTranslating ? (
-              <>
-                <span className="margin-right--sm">🔄</span>
-                Translating...
-              </>
-            ) : (
-              'اردو میں ترجمہ'
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Urdu Translation Modal */}
-      {showUrduModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h5>اردو ترجمہ</h5>
-              <button className="close-button" onClick={closeModal}>×</button>
-            </div>
-            <div className="modal-body">
-              <div className="urdu-content" dir="rtl">
-                {urduContent}
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button className="button button--secondary" onClick={closeModal}>Close</button>
-            </div>
-          </div>
         </div>
       )}
     </div>

@@ -5,11 +5,12 @@ This is an example of how the /translate-urdu endpoint should be implemented
 
 from flask import Flask, request, jsonify
 import openai
+import os
 
 app = Flask(__name__)
 
 # Configure OpenAI API
-openai.api_key = "your-openai-api-key-here"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/translate-urdu', methods=['POST'])
 def translate_urdu():
