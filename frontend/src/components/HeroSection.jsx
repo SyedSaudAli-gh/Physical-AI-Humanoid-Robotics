@@ -23,7 +23,7 @@ const HeroSection = () => {
       title: 'Gazebo & Unity Simulation',
       description: 'Master physics simulation environments for humanoid robot behaviors',
       icon: 'simulation-icon',
-      url: '/docs/simulation/intro',
+      url: '/docs/gazebo-unity/intro',
       chapterCount: 3,
     },
     {
@@ -31,7 +31,7 @@ const HeroSection = () => {
       title: 'NVIDIA Isaac Navigation',
       description: 'Advanced navigation using NVIDIA Isaac robotics platform',
       icon: 'navigation-icon',
-      url: '/docs/isaac/intro',
+      url: '/docs/nvidia-isaac/intro',
       chapterCount: 4,
     },
     {

@@ -2,31 +2,26 @@
  * Constants for API endpoints and UI settings
  */
 
-// API endpoints for rag-backend integration
+// ✅ CRITICAL: API endpoints must match backend EXACTLY
 export const API_ENDPOINTS = {
-  CHAT: '/api/chat',  // Endpoint for chat queries to rag-backend
-  HEALTH: '/health'   // Endpoint for health checks
+  CHAT: 'http://localhost:8000/api/chat',  // ✅ FULL URL
+  HEALTH: 'http://localhost:8000/health',
 };
 
 // UI configuration constants
 export const UI_CONSTANTS = {
-  // Chat window settings
-  CHAT_WINDOW_WIDTH: 400,      // Width of the chat window in pixels
-  CHAT_WINDOW_HEIGHT: 500,     // Height of the chat window in pixels
-  FLOATING_BUTTON_SIZE: 60,    // Size of the floating chat button in pixels
+  CHAT_WINDOW_WIDTH: 400,
+  CHAT_WINDOW_HEIGHT: 500,
+  FLOATING_BUTTON_SIZE: 60,
+  ANIMATION_DURATION: 300,
   
-  // Animation settings
-  ANIMATION_DURATION: 300,     // Duration for UI animations in milliseconds
-  
-  // Responsive breakpoints
   BREAKPOINTS: {
-    MOBILE: 768,    // Max width for mobile devices
-    TABLET: 1024,   // Max width for tablet devices
-    DESKTOP: 1200   // Min width for desktop devices
+    MOBILE: 768,
+    TABLET: 1024,
+    DESKTOP: 1200
   },
   
-  // Text selection
-  MAX_SELECTED_TEXT_LENGTH: 1000  // Maximum length of selected text to send to backend
+  MAX_SELECTED_TEXT_LENGTH: 1000
 };
 
 // Error messages
@@ -37,7 +32,7 @@ export const ERROR_MESSAGES = {
   CHAT_UNAVAILABLE: 'Chat service is temporarily unavailable.'
 };
 
-// Default configuration values
+// Default configuration
 export const DEFAULT_CONFIG = {
   THEME: 'light',
   FONT_SIZE: 'medium',

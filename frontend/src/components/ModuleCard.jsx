@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import Link from '@docusaurus/Link'; 
 import './ModuleCard.css';
 
 const ModuleCard = ({ id, title, description, icon, url, chapterCount }) => {
@@ -11,7 +12,6 @@ const ModuleCard = ({ id, title, description, icon, url, chapterCount }) => {
     <div className="module-card" id={id} role="listitem">
       <div className="module-card-content">
         <div className="module-icon" aria-hidden="true">
-          {/* Using a generic approach for icons - could be replaced with actual icon implementation */}
           {icon ? (
             <i className={`icon ${icon}`} aria-hidden="true"></i>
           ) : (
@@ -29,21 +29,20 @@ const ModuleCard = ({ id, title, description, icon, url, chapterCount }) => {
           </span>
         </div>
 
-        <a
-          href={url}
+        <Link
+          to={url}
           className="module-link"
           aria-label={`Explore ${title} module`}
-          role="link"
         >
           View Module
           <span className="arrow" aria-hidden="true">→</span>
-        </a>
+        </Link>
       </div>
     </div>
   );
 };
 
-// Default props for the ModuleCard component
+// Default props
 ModuleCard.defaultProps = {
   icon: null,
   chapterCount: 0

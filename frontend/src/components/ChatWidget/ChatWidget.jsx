@@ -41,11 +41,9 @@ const ChatWidget = () => {
         {
           id: (Date.now() + 1).toString(),
           sender: 'assistant',
-          text: response?.answer || 'No response received.',
+          text: response?.answer || 'No response received.', // ✅ YE SAHI HAI
           timestamp: new Date(),
-          sources: Array.isArray(response?.sources)
-            ? response.sources
-            : [],
+          sources: Array.isArray(response?.sources) ? response.sources : [],
         },
       ]);
     } catch (error) {
