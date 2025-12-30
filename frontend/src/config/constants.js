@@ -4,8 +4,8 @@
 
 // ✅ CRITICAL: API endpoints must match backend EXACTLY
 export const API_ENDPOINTS = {
-  CHAT: 'http://localhost:8000/api/chat',  // ✅ FULL URL
-  HEALTH: 'http://localhost:8000/health',
+  CHAT: 'https://syedsaudali-deploy-rag-backend.hf.space/api/chat',  // ✅ FULL URL
+  HEALTH: 'https://syedsaudali-deploy-rag-backend.hf.space/health',
 };
 
 // UI configuration constants

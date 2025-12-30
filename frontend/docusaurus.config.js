@@ -193,7 +193,7 @@ const config = {
     devServer: {
       proxy: {
         '/api': {
-          target: 'http://localhost:8000/', // Backend server address
+          target: 'https://syedsaudali-deploy-rag-backend.hf.space/', // Backend server address
           changeOrigin: true,
           secure: false, // Set to true if backend uses HTTPS
           logLevel: 'debug',
